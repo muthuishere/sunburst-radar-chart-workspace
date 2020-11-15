@@ -1,82 +1,68 @@
 <svg *ngIf="size" id="svg"  [attr.height]="size" [attr.width]="size" [attr.viewBox]="viewBox"  xmlns="http://www.w3.org/2000/svg">
 
 
-  <ng-container  *ngFor="let element of elements">
-
-
-    <ng-container *ngTemplateOutlet="tree;context:{element:element}">
-    </ng-container>
-
-    <ng-template #tree let-element="element" let-options="element.options">
-
+  <ng-container  *ngFor="let element of elements" >
 
 
 
       <ng-container [ngSwitch]="element.name" >
 
 
-          <circle *ngSwitchCase="'circle'"  [attr.cx]="options.x" [attr.cy]=[options.y]
-                  [attr.r]="options.radius"
-                  [attr.stroke-width]="options['stroke-width']"
-                  [attr.stroke]="options['stroke']"
-                  [attr.stroke-dasharray]="options['stroke-dasharray']"
-                  [attr.stroke-opacity]="options['stroke-opacity']"
-                  [attr.fill]="options['fillColor']"
+          <circle *ngSwitchCase="'circle'"  [attr.cx]="element.options.x" [attr.cy]=[element.options.y]
+                  [attr.r]="element.options.radius"
+                  [attr.stroke-width]="element.options['stroke-width']"
+                  [attr.stroke]="element.options['stroke']"
+                  [attr.stroke-dasharray]="element.options['stroke-dasharray']"
+                  [attr.stroke-opacity]="element.options['stroke-opacity']"
+                  [attr.fill]="element.options['fillColor']"
           ></circle>
 
-          <path *ngSwitchCase="'path'"  [attr.d]="options.d" [attr.fill]=[options.fill]
+          <path *ngSwitchCase="'path'"  [attr.d]="element.options.d" [attr.fill]=[element.options.fill]
 
-                  [attr.stroke]="options['stroke']"
-                  [attr.id]="options['id']"      >
-            <title>{{options['title']}}</title>
+                  [attr.stroke]="element.options['stroke']"
+                  [attr.id]="element.options['id']"      >
+            <title>{{element.options['title']}}</title>
           </path>
 
 
         <text *ngSwitchCase="'text-on-arc'"
-              [attr.font-size]="options['font-size']"
+              [attr.font-size]="element.options['font-size']"
 
         >
           <textPath
-            [attr.href]="options.href"
-            [attr.startOffset]="options.startOffset"
-            [attr.text-anchor]="options['text-anchor']"
-          >{{options['text']}}</textPath>
-          <title>{{options['title']}}</title></text>
+            [attr.href]="element.options.href"
+            [attr.startOffset]="element.options.startOffset"
+            [attr.text-anchor]="element.options['text-anchor']"
+          >{{element.options['text']}}</textPath>
+          <title>{{element.options['title']}}</title></text>
 
 
           <line *ngSwitchCase="'line'"
-                [attr.x1]="options.x1"
-                [attr.y1]="options.y1"
-                [attr.x2]="options.x2"
-                [attr.y2]="options.y2"
-                [attr.stroke-width]="options.width"
+                [attr.x1]="element.options.x1"
+                [attr.y1]="element.options.y1"
+                [attr.x2]="element.options.x2"
+                [attr.y2]="element.options.y2"
+                [attr.stroke-width]="element.options.width"
 
-                  [attr.stroke]="options['color']"    >
-            <title>{{options['title']}}</title>
+                  [attr.stroke]="element.options['color']"    >
+            <title>{{element.options['title']}}</title>
           </line>
 
 
         <text *ngSwitchCase="'text'"
-              [attr.x]="options.x"
-              [attr.y]="options.y"
-              [attr.stroke]="options.stroke"
-              [attr.stroke-width]="options['stroke-width']"
-              [attr.font-size]="options['font-size']"
-              [attr.text-anchor]="options['text-anchor']"
-        >{{options.content}}
-          <title>{{options['content']}}</title>
+              [attr.x]="element.options.x"
+              [attr.y]="element.options.y"
+              [attr.stroke]="element.options.stroke"
+              [attr.stroke-width]="element.options['stroke-width']"
+              [attr.font-size]="element.options['font-size']"
+              [attr.text-anchor]="element.options['text-anchor']"
+        >{{element.options.content}}
+          <title>{{element.options['content']}}</title>
         </text>
 
       </ng-container>
 
 
-      <ng-container *ngIf="element.children && element.children.length > 0">
-        <ng-container *ngFor="let child of element.children">
-            <ng-container *ngTemplateOutlet="tree;context:{element:child}">
-            </ng-container>
-        </ng-container>
-      </ng-container>
-    </ng-template>
 
   </ng-container>
 

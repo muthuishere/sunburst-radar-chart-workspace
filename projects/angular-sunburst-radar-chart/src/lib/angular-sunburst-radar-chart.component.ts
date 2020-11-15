@@ -25,7 +25,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   items;
 
   @Input()
-  maxScore = 100;
+  maxScore: number;
 
 
   viewBox;
@@ -59,7 +59,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     for (let i = 0; i < this.elements.length; i++) {
 
       const element = this.elements[i];
-      if (element.options['ref'] && element.options['ref'] === refName) {
+      if (element.options.ref && element.options.ref === refName) {
         changeIndex = i + 1;
         break;
       }
@@ -76,10 +76,14 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
 
   ngOnChanges(changes: SimpleChanges) {
-    // reset page if items array has changed
-    if (hashCode(changes.items) !== hashCode(changes.items.previousValue)) {
+
+
+    const isFirstChange = Object.values(changes).some(c => c.isFirstChange());
+    if (!isFirstChange) {
+
       this.initialize();
     }
+
   }
 
   ngOnInit(): void {
@@ -90,13 +94,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   initialize(): void {
 
     if (!this.size || !this.items) {
+
       return;
     }
 
 
     this.viewBox = '0 0 ' + this.size + ' ' + this.size;
 
-    this.maxScore = 100;
 
     this.innerCircleRadius = Math.abs(this.size / 5.33);
 
@@ -110,7 +114,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     });
 
-    this.hasChildren = this.items.find(item => !!item['children']) !== null;
+    this.hasChildren = this.items.find(item => !!item.children) !== null;
 
 
     this.drawLayout();
@@ -171,7 +175,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
           totalDegrees: angleDifference,
           startDegree: startAngle,
           endDegree: endAngle,
-          color:item.color
+          color: item.color
         }));
 
       }
@@ -180,7 +184,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       lines.push(createLine({x1: centerX, y1: centerY, x2: x, y2: y, width: 2}));
 
 
-      //Create Arc for inner values
+      // Create Arc for inner values
       const barWithinArc = createBarWithInArc({
         startPoint: center,
         item,
@@ -191,13 +195,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       });
       elements.push(barWithinArc);
 
-      //Set Background for Outer Stuff
+      // Set Background for Outer Stuff
       if (hasChildren) {
         this.drawOuterBackground(item, center, outerRadiusBorder, startAngle, endAngle);
       }
 
 
-      //Write Text for Inner Values
+      // Write Text for Inner Values
 
 
       const innerTextElements = this.addArcText({
@@ -288,25 +292,25 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     let secondPoint = polarToCartesian(centerX, centerY, radiusFromCenter, endAngle);
 
 
-    let startPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, startAngle);
-    let endPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, endAngle);
+    const startPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, startAngle);
+    const endPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, endAngle);
 
 
-    let startMiddlePoint = polarToCartesian(centerX, centerY, innerRadiusBorder, middleAngle);
+    const startMiddlePoint = polarToCartesian(centerX, centerY, innerRadiusBorder, middleAngle);
 
 
     const distFromStartToFirst = Math.sqrt(Math.pow((startPoint.x - firstPoint.x), 2) + Math.pow((startPoint.y - firstPoint.y), 2));
     const distFromStartToSecond = Math.sqrt(Math.pow((startPoint.x - secondPoint.x), 2) + Math.pow((startPoint.y - secondPoint.y), 2));
 
     if (distFromStartToSecond < distFromStartToFirst) {
-      let temp = firstPoint;
+      const temp = firstPoint;
       firstPoint = secondPoint;
       secondPoint = temp;
 
     }
 
 
-    let incFactor = 0;
+    const incFactor = 0;
 
 
     const d = [
@@ -324,7 +328,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     const title = item.name + '-' + item.value;
 
-    return createPath({d: d.join(' '), 'stroke': 'none', 'fill': color, title});
+    return createPath({d: d.join(' '), stroke: 'none', fill: color, title});
   }
 
 
@@ -335,7 +339,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     const [centerX, centerY] = [center.x, center.y];
 
 
-    let {angles, middleAngles} = splitAngles(items.length, totalDegrees, startDegree);
+    const {angles, middleAngles} = splitAngles(items.length, totalDegrees, startDegree);
 
     const perAngle = totalDegrees / items.length;
 
@@ -363,10 +367,10 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       }));
 
 
-      let endAngleIndex = i + 1;
+      const endAngleIndex = i + 1;
       let endAngle;
-      let startAngle = angles[i];
-      let middleAngle = middleAngles[i];
+      const startAngle = angles[i];
+      const middleAngle = middleAngles[i];
       if (endAngleIndex >= pointsOnInnerRadiusBorder.length) {
 
         endAngle = endDegree;
@@ -534,7 +538,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         y: centerY,
         radius: outerRadiusBorder,
         fillColor: '#DE00AB',
-        'ref': this.outerBorderCircleRef
+        ref: this.outerBorderCircleRef
 
       });
       this.appendToSvg(outerBorderCircle);

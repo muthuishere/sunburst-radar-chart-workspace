@@ -1,7 +1,18 @@
 {
   "name": "angular-sunburst-radar-chart",
-  "version": "1.0.0",
-  "author": "Muthukumaran Navaneethakrishnan",
+  "version": "1.1.0",
+  "author": {
+    "name": "Muthukumaran Navaneethakrishnan",
+    "url": "https://github.com/muthuishere"
+  },
+  "bugs": {
+    "url": "https://github.com/muthuishere/sunburst-radar-chart-workspace/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/muthuishere/sunburst-radar-chart-workspace.git"
+  },
   "description": "A Sunburst Radar chart with SVG,No Dependencies",
   "keywords": [
     "angular",
