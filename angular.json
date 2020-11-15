@@ -2,5 +2,46 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": {}
+  "projects": {
+    "angular-sunburst-radar-chart": {
+      "projectType": "library",
+      "root": "projects/angular-sunburst-radar-chart",
+      "sourceRoot": "projects/angular-sunburst-radar-chart/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/angular-sunburst-radar-chart/tsconfig.lib.json",
+            "project": "projects/angular-sunburst-radar-chart/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/angular-sunburst-radar-chart/tsconfig.lib.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/angular-sunburst-radar-chart/src/test.ts",
+            "tsConfig": "projects/angular-sunburst-radar-chart/tsconfig.spec.json",
+            "karmaConfig": "projects/angular-sunburst-radar-chart/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/angular-sunburst-radar-chart/tsconfig.lib.json",
+              "projects/angular-sunburst-radar-chart/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    }},
+  "defaultProject": "angular-sunburst-radar-chart"
 }

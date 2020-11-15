@@ -14,7 +14,13 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "angular-sunburst-radar-chart": [
+        "dist/angular-sunburst-radar-chart/angular-sunburst-radar-chart",
+        "dist/angular-sunburst-radar-chart"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

@@ -1,0 +1,21 @@
+{
+  "name": "angular-sunburst-radar-chart",
+  "version": "1.0.0",
+  "author": "Muthukumaran Navaneethakrishnan",
+  "description": "A Sunburst Radar chart with SVG,No Dependencies",
+  "keywords": [
+    "angular",
+    "chart",
+    "sunburst chart",
+    "svg chart",
+    "angular chart",
+    "sunburst radar"
+  ],
+  "peerDependencies": {
+    "@angular/common": "^9.1.12",
+    "@angular/core": "^9.1.12"
+  },
+  "dependencies": {
+    "tslib": "^1.10.0"
+  }
+}
