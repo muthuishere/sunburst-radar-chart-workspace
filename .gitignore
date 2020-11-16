@@ -45,3 +45,5 @@ testem.log
 .DS_Store
 Thumbs.db
 /publish.bat
+/publish-docs.bat
+/publish-package.bat
