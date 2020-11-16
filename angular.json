@@ -42,6 +42,127 @@
           }
         }
       }
+    },
+    "angular-sunburst-radar-chart-demo": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/angular-sunburst-radar-chart-demo",
+      "sourceRoot": "projects/angular-sunburst-radar-chart-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "docs",
+            "index": "projects/angular-sunburst-radar-chart-demo/src/index.html",
+            "main": "projects/angular-sunburst-radar-chart-demo/src/main.ts",
+            "polyfills": "projects/angular-sunburst-radar-chart-demo/src/polyfills.ts",
+            "tsConfig": "projects/angular-sunburst-radar-chart-demo/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "projects/angular-sunburst-radar-chart-demo/src/favicon.ico",
+              "projects/angular-sunburst-radar-chart-demo/src/assets"
+            ],
+            "styles": [
+              "projects/angular-sunburst-radar-chart-demo/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/angular-sunburst-radar-chart-demo/src/environments/environment.ts",
+                  "with": "projects/angular-sunburst-radar-chart-demo/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "angular-sunburst-radar-chart-demo:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "angular-sunburst-radar-chart-demo:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "angular-sunburst-radar-chart-demo:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/angular-sunburst-radar-chart-demo/src/test.ts",
+            "polyfills": "projects/angular-sunburst-radar-chart-demo/src/polyfills.ts",
+            "tsConfig": "projects/angular-sunburst-radar-chart-demo/tsconfig.spec.json",
+            "karmaConfig": "projects/angular-sunburst-radar-chart-demo/karma.conf.js",
+            "assets": [
+              "projects/angular-sunburst-radar-chart-demo/src/favicon.ico",
+              "projects/angular-sunburst-radar-chart-demo/src/assets"
+            ],
+            "styles": [
+              "projects/angular-sunburst-radar-chart-demo/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/angular-sunburst-radar-chart-demo/tsconfig.app.json",
+              "projects/angular-sunburst-radar-chart-demo/tsconfig.spec.json",
+              "projects/angular-sunburst-radar-chart-demo/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/angular-sunburst-radar-chart-demo/e2e/protractor.conf.js",
+            "devServerTarget": "angular-sunburst-radar-chart-demo:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "angular-sunburst-radar-chart-demo:serve:production"
+            }
+          }
+        }
+      }
     }},
   "defaultProject": "angular-sunburst-radar-chart"
 }

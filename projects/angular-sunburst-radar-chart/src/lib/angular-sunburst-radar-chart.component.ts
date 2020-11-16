@@ -27,9 +27,12 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   @Input()
   maxScore: number;
 
+  @Input()
+  animateChart;
 
   viewBox;
 
+  initialized = false;
   innerCircleRadius;
 
   innerBorderHeight = 30;
@@ -78,11 +81,14 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
 
 
+    console.log("changes",changes)
     const isFirstChange = Object.values(changes).some(c => c.isFirstChange());
+
     if (!isFirstChange) {
 
       this.initialize();
     }
+
 
   }
 
@@ -97,7 +103,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
       return;
     }
-
+    this.initialized = false;
+    console.log('animation', this.animateChart);
 
     this.viewBox = '0 0 ' + this.size + ' ' + this.size;
 
@@ -256,6 +263,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     this.drawLegends(angles[0]);
     this.addSmallCirclesAtCenter(centerX, centerY);
 
+   this.initialized = true;
   }
 
 
@@ -449,13 +457,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   private addSmallCirclesAtCenter(centerX: number, centerY: number) {
 
-    const outerRadius = 0.025 * this.size;
-    const innerRadius = 0.005 * this.size;
+    const outerRadius = 0.0025 * 2* this.size;
+    const innerRadius = 0.0005 *  2 * this.size;
     this.appendToSvg(createCircle({
       x: centerX,
       y: centerY,
       radius: outerRadius,
-      fillColor: '#000000'
+      fillColor: '#FFFFFF'
     }));
 
     this.appendToSvg(createCircle({
@@ -538,6 +546,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         y: centerY,
         radius: outerRadiusBorder,
         fillColor: '#DE00AB',
+        "stroke-width": '5',
         ref: this.outerBorderCircleRef
 
       });

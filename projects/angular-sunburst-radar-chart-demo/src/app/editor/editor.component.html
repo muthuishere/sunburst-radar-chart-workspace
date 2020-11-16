@@ -1,0 +1,47 @@
+
+<div class="container-fluid">
+<table>
+  <tr>
+    <td>
+      <div *ngIf="!submitting" [ngStyle]="{'min-width.px': updatedSize,'width.px': updatedSize}" >
+
+
+        <lib-sunburst-radar-chart  [size]="updatedSize" [animateChart]="updatedAnimateChart" [maxScore]="updatedMaxScore" [items]="items"></lib-sunburst-radar-chart>
+
+      </div>
+    </td>
+    <td>
+      <form (ngSubmit)="updateChart()">
+        <div class="form-group ">
+          <label for="chartSize" >Chart Size</label>
+          <input type="number" class="form-control" id="chartSize" name="chartSize" [(ngModel)]="size" />
+        </div>
+        <div class="form-group ">
+          <label for="maxScore" >Max Score</label>
+          <input type="number" class="form-control" id="maxScore" name="maxScore" [(ngModel)]="maxScore">
+        </div>
+   <div class="form-group ">
+          <label for="animateChart" >Animate</label>
+     <select id="animateChart" name="animateChart" [(ngModel)]="animateChart" class="form-control">
+       <option value="true">true</option>
+       <option  value="false">false</option>
+     </select>
+
+        </div>
+
+        <div class="form-group ">
+          <label for="itemJson" >Data</label><br/>
+          <textarea [(ngModel)]="itemJson" cols="80" rows="10" id="itemJson" name="itemJson"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary mb-2" >Update</button>
+      </form>
+      <div class="alert alert-danger" role="alert" *ngIf="error">
+        {{error}}
+      </div>
+
+    </td>
+  </tr>
+</table>
+
+
+</div>

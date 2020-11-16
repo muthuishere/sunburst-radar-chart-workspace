@@ -1,10 +1,15 @@
 {
   "name": "angular-sunburst-radar-chart",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "author": {
     "name": "Muthukumaran Navaneethakrishnan",
     "url": "https://github.com/muthuishere"
   },
+  "homepage": "https://muthuishere.github.io/sunburst-radar-chart-workspace/",
+  "contributors": [{
+    "name": "Madhana Gopala Ramachandran"
+  }
+  ],
   "bugs": {
     "url": "https://github.com/muthuishere/sunburst-radar-chart-workspace/issues"
   },
@@ -20,6 +25,7 @@
     "sunburst chart",
     "svg chart",
     "angular chart",
+    "sunburst radar chart",
     "sunburst radar"
   ],
   "peerDependencies": {

@@ -1,13 +1,14 @@
 # Angular Sunburst Radar Chart
 
-A Sunburst chart component in Angular
-
-
-Sample Image
+A Sunburst chart component in Angular developed using no dependencies, offCourse used SVG
 
 
 
-To Use Import AngularSunburstRadarChartModule  to your module .
+[Chart Demo](https://muthuishere.github.io/sunburst-radar-chart-workspace/)
+
+To Use 
+
+Import AngularSunburstRadarChartModule  to your module .
 
 ```
  imports: [
@@ -28,7 +29,7 @@ in your component.ts
 
 in your component.html
 ```
-<lib-sunburst-radar-chart size="800" [maxScore]="100" [items]="items"></lib-sunburst-radar-chart>
+<lib-sunburst-radar-chart animateChart="true" size="800" [maxScore]="100" [items]="items"></lib-sunburst-radar-chart>
 
 ```
 
@@ -44,6 +45,7 @@ The above will display chart something like below
 |--- |--- |--- |
 |items|Array|List of items to be displayed on chart in Array format of type Item |
 |size|number|Size of chart|
+|animateChart|boolean|Animate the chart while showing|
 |maxScore|number|Maximum score on axis|
 
 Item Data Type
@@ -57,7 +59,9 @@ Item -{
   
 ```
 
-If you find it useful try considering
+
+
+If you find it useful, try considering
 
 <a href="https://www.buymeacoffee.com/muthuishere" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 

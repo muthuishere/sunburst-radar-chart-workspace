@@ -1,12 +1,22 @@
 # Angular Sunburst Radar Chart
 
-A Sunburst chart component in Angular
+A Sunburst chart component in Angular developed using no dependencies, offCourse used SVG
 
 
 
+[Chart Demo](https://muthuishere.github.io/sunburst-radar-chart-workspace/)
 
+To Use 
 
+Import AngularSunburstRadarChartModule  to your module .
 
+```
+ imports: [
+    ... Other modules
+    AngularSunburstRadarChartModule
+  ],
+
+```
 in your component.ts
  ```
   const items = [{      name: 'Delaware ',    color: '#b24bb7',    value: 100,           children: [{          name: 'Kent County',          value: 100        },{          name: 'New Castle County',          value: 100        },{          name: 'Sussex County',          value: 100        }]},
@@ -19,15 +29,39 @@ in your component.ts
 
 in your component.html
 ```
-<lib-sunburst-radar-chart [items]=items size="800" maxScore="100" ></lib-sunburst-radar-chart>
+<lib-sunburst-radar-chart animateChart="true" size="800" [maxScore]="100" [items]="items"></lib-sunburst-radar-chart>
+
 ```
+
+The above will display chart something like below
 
 
 ![SunBurst Radar Chart Output ](https://raw.githubusercontent.com/muthuishere/sunburst-radar-chart-workspace/main/projects/angular-sunburst-radar-chart/sample.JPG)
 
 
 
-If you find it useful try considering
+
+|Parameter|Data Type|Description|
+|--- |--- |--- |
+|items|Array|List of items to be displayed on chart in Array format of type Item |
+|size|number|Size of chart|
+|animateChart|boolean|Animate the chart while showing|
+|maxScore|number|Maximum score on axis|
+
+Item Data Type
+```
+Item -{
+           name:string
+          value:number,
+          color:HexCode String
+           children: Item[]
+  } 
+  
+```
+
+
+
+If you find it useful, try considering
 
 <a href="https://www.buymeacoffee.com/muthuishere" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
