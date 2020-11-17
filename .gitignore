@@ -47,3 +47,4 @@ Thumbs.db
 /publish.bat
 /publish-docs.bat
 /publish-package.bat
+/*.bat
