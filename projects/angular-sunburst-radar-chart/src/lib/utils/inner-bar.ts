@@ -1,6 +1,7 @@
 import {polarToCartesian} from './trignometry';
 import {convertToPercentage} from './math';
 import {createPath} from './elements';
+import {getItemTitle} from './utils';
 
 export function createBarWithInArc({startPoint, item, radius, startAngle, endAngle,maxScore}) {
 
@@ -24,11 +25,8 @@ export function createBarWithInArc({startPoint, item, radius, startAngle, endAng
   ].join(' ');
 
 
-  let title = '';
+  let title = getItemTitle(item);
 
-  if (item.name && item.value) {
-    title = item.name + '-' + item.value;
-  }
 
   const arcForInnerChart = createPath({d, fill: color, title});
 

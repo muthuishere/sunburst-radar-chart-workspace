@@ -1,17 +1,31 @@
 export function hashCode(obj) {
   let h = 0;
-  if (obj) {
-    let s = JSON.stringify(obj);
+  obj = getOptionsOrEmpty(obj);
 
-    if (s && s.length) {
-      for (let i = 0; i < s.length; i++) {
-        h = Math.imul(31, h) + s.charCodeAt(i) | 0;
-      }
-    }
+  let s = JSON.stringify(obj);
+
+
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(31, h) + s.charCodeAt(i) | 0;
   }
+
+
   return h;
 }
 
+export function getOptionsOrEmpty(options) {
+  return options || {};
+}
+
+
+export function getItemTitle(item) {
+  item = item || {name: '', value: ''};
+
+  const dash = item.name.length > 0 ? '-' : '';
+
+  return item.name + dash + item.value;
+
+}
 
 export function clone(obj) {
 

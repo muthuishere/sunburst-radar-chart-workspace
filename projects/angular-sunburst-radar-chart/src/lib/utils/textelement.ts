@@ -1,6 +1,7 @@
 import {createPath} from './elements';
 import {polarToCartesian} from './trignometry';
 import {AngularSvgElement} from './models';
+import {getOptionsOrEmpty} from './utils';
 
 
 export function createArcToWriteText({startPoint, radius, id, startAngle, endAngle}) {
@@ -48,7 +49,7 @@ export function writeTextOnArc(options) {
 
 
   const defaults = {text: '', label: '', pathId: '', 'font-size': '14px',};
-  options = {...defaults, ...(options || {})};
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const {text, pathId, label} = options;
 
@@ -95,7 +96,7 @@ export function createText(options) {
     'font-size': '6px',
     'text-anchor': 'middle'
   };
-  options = {...defaults, ...(options || {})};
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const textElement: AngularSvgElement = {name: 'text', options, children: []};
   return textElement;

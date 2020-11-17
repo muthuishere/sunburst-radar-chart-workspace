@@ -2,10 +2,10 @@ import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core'
 import {createCircle, createLine, createPath} from './utils/elements';
 import {createArcToWriteText, getTextForAngle, writeTextOnArc} from './utils/textelement';
 import {createBarWithInArc} from './utils/inner-bar';
-import {getGlobalPositions, GlobalPosition} from './utils/positions';
+import {getGlobalPositions, GlobalPosition, Point} from './utils/positions';
 import {distanceBetweenTwoPoints, polarToCartesian} from './utils/trignometry';
 import {createLegends, createLegendWithOptions} from './utils/legend';
-import {generateRandomColor, hashCode} from './utils/utils';
+import {generateRandomColor, getItemTitle, hashCode} from './utils/utils';
 import {getPointsOnCircleAtAngels, positionsOnAngles, splitAngles, splitCircleToAngles} from './utils/angels';
 import {convertToPercentage} from './utils/math';
 import {AngularSvgElement} from './utils/models';
@@ -56,28 +56,6 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   }
 
 
-  insertAdjacentToSvg(refName, elementToBeInserted: AngularSvgElement) {
-
-    let changeIndex = -1;
-    for (let i = 0; i < this.elements.length; i++) {
-
-      const element = this.elements[i];
-      if (element.options.ref && element.options.ref === refName) {
-        changeIndex = i + 1;
-        break;
-      }
-    }
-
-    if (changeIndex !== -1) {
-      // console.log('inserting on ' + changeIndex);
-      this.elements.splice(changeIndex, 0, elementToBeInserted);
-    } else {
-      throw new Error('Invalid Ref name');
-    }
-
-  }
-
-
   ngOnChanges(changes: SimpleChanges) {
 
 
@@ -98,7 +76,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   initialize(): void {
 
-    if (!this.size || !this.items) {
+    if (this.hasValuesSet()) {
+
 
       return;
     }
@@ -120,7 +99,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     });
 
-    this.hasChildren = this.items.find(item => !!item.children) !== null;
+    this.hasChildren = this.items.filter(item => !!item.children).length > 0;
 
 
     this.drawLayout();
@@ -204,14 +183,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       elements.push(barWithinArc);
 
 
-
       const innerTextElements = this.addArcText({
         arcForTextId: 'arc-text-inner' + this.getUniqueCode() + '-' + i,
         radius: innerTextRadius,
         fontSize: textSize,
         startAngle,
         endAngle,
-        perAngle:angleDifference,
+        perAngle: angleDifference,
         item
       });
       elements = elements.concat(innerTextElements);
@@ -225,7 +203,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
             arcForTextId: 'arc-text-outer' + this.getUniqueCode() + '-' + i,
             radius: outerTextRadius,
             fontSize: outerTextSize,
-            perAngle:angleDifference,
+            perAngle: angleDifference,
             startAngle,
             endAngle,
             item
@@ -264,7 +242,11 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   }
 
 
-   calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius}) {
+  hasValuesSet() {
+    return !this.size || !this.items;
+  }
+
+  calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius}) {
 
 
     if (startAngle >= 360) {
@@ -286,7 +268,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   }
 
-  private drawOuterBackgroundWithMiddle({item, startAngle, middleAngle, endAngle}) {
+  drawOuterBackgroundWithMiddle({item, startAngle, middleAngle, endAngle}) {
 
 
     let color = item.color;
@@ -362,18 +344,36 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     const startMiddlePoint = polarToCartesian(centerX, centerY, innerRadiusBorder, middleAngle);
 
-
     const distFromStartToFirst = Math.sqrt(Math.pow((startPoint.x - firstPoint.x), 2) + Math.pow((startPoint.y - firstPoint.y), 2));
     const distFromStartToSecond = Math.sqrt(Math.pow((startPoint.x - secondPoint.x), 2) + Math.pow((startPoint.y - secondPoint.y), 2));
 
+
+    const {updatedFirstPoint, updatedSecondPoint} = this.getUpdatedPoints( firstPoint, secondPoint,distFromStartToFirst,distFromStartToSecond);
+
+
+    const d = this.getDrawPositions(updatedFirstPoint, middleRadius, updatedSecondPoint, endPoint, startMiddlePoint, startPoint);
+
+
+    const title = getItemTitle(item);
+
+    return createPath({d: d.join(' '), stroke: 'none', fill: color, title});
+  }
+
+
+   getUpdatedPoints( firstPoint: Point, secondPoint: Point,distFromStartToFirst,distFromStartToSecond) {
+
+    let [updatedFirstPoint, updatedSecondPoint] = [firstPoint, secondPoint];
+
     if (distFromStartToSecond < distFromStartToFirst) {
-      const temp = firstPoint;
-      firstPoint = secondPoint;
-      secondPoint = temp;
+      updatedSecondPoint = firstPoint;
+      updatedFirstPoint = secondPoint;
+
 
     }
+    return {updatedSecondPoint, updatedFirstPoint};
+  }
 
-
+  private getDrawPositions(firstPoint: { x: any; y: any }, middleRadius, secondPoint: { x: any; y: any }, endPoint: { x: any; y: any }, startMiddlePoint: { x: any; y: any }, startPoint: { x: any; y: any }) {
     const d = [
 
       'M', firstPoint.x, firstPoint.y,
@@ -385,13 +385,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
 
     ];
-
-
-    const title = item.name + '-' + item.value;
-
-    return createPath({d: d.join(' '), stroke: 'none', fill: color, title});
+    return d;
   }
-
 
   drawOnLevel({items, totalDegrees, startDegree, endDegree, color}) {
 
@@ -479,13 +474,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   }
 
-  private getUniqueCode() {
+  getUniqueCode() {
 
     return hashCode(this.items) + '-' + this.size;
 
   }
 
-  private drawInnerBorders() {
+  drawInnerBorders() {
 
     const {innerRadius, innerRadiusBorder, center} = this.globalPosition;
     const [centerX, centerY] = [center.x, center.y];
@@ -509,7 +504,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     this.appendToSvg(innerContainer);
   }
 
-  private addSmallCirclesAtCenter(centerX: number, centerY: number) {
+  addSmallCirclesAtCenter(centerX: number, centerY: number) {
 
     const outerRadius = 0.0025 * 2 * this.size;
     const innerRadius = 0.0005 * 2 * this.size;
@@ -529,7 +524,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   }
 
-  private drawLegends(degreeToBeDrawn) {
+  drawLegends(degreeToBeDrawn) {
 
     const {innerRadius, innerRadiusBorder, middleRadius, center} = this.globalPosition;
 
@@ -560,21 +555,21 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   }
 
 
-  addArcText({arcForTextId, radius, startAngle, fontSize, endAngle,perAngle, item}) {
+  addArcText({arcForTextId, radius, startAngle, fontSize, endAngle, perAngle, item}) {
     const elements = [];
     const {center} = this.globalPosition;
     const [centerX, centerY] = [center.x, center.y];
     const arcForText = createArcToWriteText({id: arcForTextId, startPoint: center, radius, startAngle, endAngle});
     elements.push(arcForText);
-    const distance = distanceBetweenTwoPoints(centerX, centerY,radius, startAngle, endAngle);
+    const distance = distanceBetweenTwoPoints(centerX, centerY, radius, startAngle, endAngle);
 
 
-    const label=getTextForAngle(item.name,distance,fontSize)
-    elements.push(writeTextOnArc({label, text:item.name, pathId: arcForTextId, 'font-size': fontSize + 'px'}));
+    const label = getTextForAngle(item.name, distance, fontSize);
+    elements.push(writeTextOnArc({label, text: item.name, pathId: arcForTextId, 'font-size': fontSize + 'px'}));
     return elements;
   }
 
-  private drawLayout() {
+  drawLayout() {
 
     const {innerRadius, innerRadiusBorder, middleRadius, middleRadiusBorder, outerRadius, outerRadiusBorder, center} = this.globalPosition;
 

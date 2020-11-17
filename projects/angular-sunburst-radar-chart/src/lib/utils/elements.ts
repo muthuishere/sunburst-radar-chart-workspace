@@ -1,4 +1,5 @@
 import {AngularSvgElement} from './models';
+import {getOptionsOrEmpty} from './utils';
 
 export function createCircle(options) {
 
@@ -14,7 +15,7 @@ export function createCircle(options) {
     'stroke-opacity': '1',
     'title': ''
   };
-  options = {...defaults, ...(options || {})};
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const circle: AngularSvgElement = {name: 'circle', options, children: []};
   return circle;
@@ -27,7 +28,7 @@ export function createLine(options) {
 
 
   const defaults = {x1: 0, y1: 0, x2: 0, y2: 0, color: '#000000', width: '2', title: ''};
-  options = {...defaults, ...(options || {})};
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const line: AngularSvgElement = {name: 'line', options, children: []};
   return line;
@@ -39,7 +40,7 @@ export function createLine(options) {
 export function createPath(options) {
 
   const defaults = {d: '', fill: 'none', stroke: 'none', 'stroke-width': '0',title: '', id: null};
-  options = {...defaults, ...(options || {})};
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const {d, color, borderColor} = options;
 

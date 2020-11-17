@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {countriesWithCounty, exampleValues} from './items';
+import {exampleValues} from './items';
 
 @Component({
   selector: 'app-editor',
@@ -14,14 +14,15 @@ export class EditorComponent implements OnInit {
   updatedSize = 800;
   updatedSizepx = this.updatedSize + 'px';
   updatedMaxScore = 100;
-  updatedAnimateChart = false;
+
 
   size: number;
   maxScore: number;
   itemJson: any;
   error = null;
   submitting: any = false;
-  animateChart = 'false';
+  animateChart = 'true';
+  updatedAnimateChart;
 
   constructor() {
   }
@@ -30,6 +31,7 @@ export class EditorComponent implements OnInit {
     this.size = this.updatedSize;
     this.maxScore = this.updatedMaxScore;
     this.itemJson = JSON.stringify(this.items, null, ' ');
+    this.updatedAnimateChart = (this.animateChart == 'true');
   }
 
   IsJsonString(str) {
@@ -57,7 +59,7 @@ export class EditorComponent implements OnInit {
       this.updatedSizepx = this.updatedSize + 'px';
       this.updatedMaxScore = this.maxScore;
 
-        this.updatedAnimateChart = (this.animateChart =='true');
+      this.updatedAnimateChart = (this.animateChart == 'true');
 
       console.log('max', this.updatedMaxScore);
       this.items = JSON.parse(this.itemJson);
