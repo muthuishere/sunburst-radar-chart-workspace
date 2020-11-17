@@ -38,7 +38,7 @@ export function createLine(options) {
 
 export function createPath(options) {
 
-  const defaults = {d: '', fill: 'none', stroke: 'none', title: '', id: null};
+  const defaults = {d: '', fill: 'none', stroke: 'none', 'stroke-width': '0',title: '', id: null};
   options = {...defaults, ...(options || {})};
 
   const {d, color, borderColor} = options;

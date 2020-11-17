@@ -1,9 +1,9 @@
 import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {createCircle, createLine, createPath} from './utils/elements';
-import {createArcToWriteText, writeTextOnArc} from './utils/textelement';
+import {createArcToWriteText, getTextForAngle, writeTextOnArc} from './utils/textelement';
 import {createBarWithInArc} from './utils/inner-bar';
-import {getGlobalPositions, GlobalPosition, Point} from './utils/positions';
-import {polarToCartesian} from './utils/trignometry';
+import {getGlobalPositions, GlobalPosition} from './utils/positions';
+import {distanceBetweenTwoPoints, polarToCartesian} from './utils/trignometry';
 import {createLegends, createLegendWithOptions} from './utils/legend';
 import {generateRandomColor, hashCode} from './utils/utils';
 import {getPointsOnCircleAtAngels, positionsOnAngles, splitAngles, splitCircleToAngles} from './utils/angels';
@@ -81,7 +81,6 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
 
 
-    console.log("changes",changes)
     const isFirstChange = Object.values(changes).some(c => c.isFirstChange());
 
     if (!isFirstChange) {
@@ -104,7 +103,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       return;
     }
     this.initialized = false;
-    console.log('animation', this.animateChart);
+
 
     this.viewBox = '0 0 ' + this.size + ' ' + this.size;
 
@@ -132,8 +131,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     const items = this.items;
     const hasChildren = this.hasChildren;
-    let angles;
-    angles = splitCircleToAngles(items.length);
+
+    const {angles, middleAngles} = splitCircleToAngles(items.length);
 
     let angleDifference = 0;
     if (angles.length > 1) {
@@ -160,6 +159,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
       const endAngle = angles[endAngleIndex];
       const startAngle = angles[i];
+      const middleAngle = middleAngles[i];
+
       let item = items[i];
 
 
@@ -202,13 +203,6 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       });
       elements.push(barWithinArc);
 
-      // Set Background for Outer Stuff
-      if (hasChildren) {
-        this.drawOuterBackground(item, center, outerRadiusBorder, startAngle, endAngle);
-      }
-
-
-      // Write Text for Inner Values
 
 
       const innerTextElements = this.addArcText({
@@ -217,6 +211,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         fontSize: textSize,
         startAngle,
         endAngle,
+        perAngle:angleDifference,
         item
       });
       elements = elements.concat(innerTextElements);
@@ -224,11 +219,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
       if (hasChildren) {
 
+        elements.push(this.drawOuterBackgroundWithMiddle({item, startAngle, middleAngle, endAngle}));
         const outerBackgroundTextElements = this.addArcText(
           {
             arcForTextId: 'arc-text-outer' + this.getUniqueCode() + '-' + i,
             radius: outerTextRadius,
             fontSize: outerTextSize,
+            perAngle:angleDifference,
             startAngle,
             endAngle,
             item
@@ -263,9 +260,68 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     this.drawLegends(angles[0]);
     this.addSmallCirclesAtCenter(centerX, centerY);
 
-   this.initialized = true;
+    this.initialized = true;
   }
 
+
+   calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius}) {
+
+
+    if (startAngle >= 360) {
+      startAngle = startAngle % 360;
+    }
+    if (endAngle >= 360) {
+      endAngle = endAngle % 360;
+    }
+
+    if (middleAngle >= 360) {
+      middleAngle = middleAngle % 360;
+    }
+
+    let start = polarToCartesian(centerX, centerY, radius, startAngle);
+    let middle = polarToCartesian(centerX, centerY, radius, middleAngle);
+    let end = polarToCartesian(centerX, centerY, radius, endAngle);
+
+    return {start, middle, end};
+
+  }
+
+  private drawOuterBackgroundWithMiddle({item, startAngle, middleAngle, endAngle}) {
+
+
+    let color = item.color;
+
+    const {outerRadius, outerRadiusBorder, center} = this.globalPosition;
+
+    const [centerX, centerY] = [center.x, center.y];
+
+
+    const startCircle = this.calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius: outerRadius});
+    const endCircle = this.calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius: outerRadiusBorder});
+
+
+    // 1, 0, 1  = To Draw arc start to end
+    // 1, 0, 0  = To Draw arc end to start
+    const d = [
+
+      'M', startCircle.start.x, startCircle.start.y,
+      'L', endCircle.start.x, endCircle.start.y,
+      'L', startCircle.start.x, startCircle.start.y,
+      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 1, startCircle.middle.x, startCircle.middle.y,
+      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 1, startCircle.end.x, startCircle.end.y,
+      'L', endCircle.end.x, endCircle.end.y,
+      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 0, endCircle.middle.x, endCircle.middle.y,
+      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 0, endCircle.start.x, endCircle.start.y,
+      'Z'
+
+
+    ];
+
+    const title = item.name + '-' + item.value;
+
+    return createPath({d: d.join(' '), fill: color, title});
+
+  }
 
   createLevelChartWith({item, startAngle, endAngle, middleAngle, color, index}) {
 
@@ -318,15 +374,12 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     }
 
 
-    const incFactor = 0;
-
-
     const d = [
 
       'M', firstPoint.x, firstPoint.y,
       'A', middleRadius, middleRadius, 0, 0, 1, secondPoint.x, secondPoint.y,
       'L', endPoint.x, endPoint.y,
-      'C', endPoint.x, endPoint.y, startMiddlePoint.x + incFactor, startMiddlePoint.y + incFactor, startPoint.x, startPoint.y,
+      'C', endPoint.x, endPoint.y, startMiddlePoint.x, startMiddlePoint.y, startPoint.x, startPoint.y,
       'L', firstPoint.x, firstPoint.y,
       'Z'
 
@@ -371,7 +424,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
       lines.push(createLine({
         x1: pointOnInnerRadiusBorder.x, y1: pointOnInnerRadiusBorder.y,
-        x2: pointOnMiddle.x, y2: pointOnMiddle.y, width: 2
+        x2: pointOnMiddle.x, y2: pointOnMiddle.y, width: 0.5
       }));
 
 
@@ -402,6 +455,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         arcForTextId: 'arc-text-middle' + this.getUniqueCode() + '-' + startAngle + i,
         radius: middleTextRadius,
         fontSize: textSize,
+        perAngle,
         startAngle,
         endAngle,
         item
@@ -440,7 +494,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       x: centerX,
       y: centerY,
       radius: innerRadius,
-      fillColor: '#FFFFFF'
+      fillColor: 'none'
     });
 
 
@@ -457,8 +511,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   private addSmallCirclesAtCenter(centerX: number, centerY: number) {
 
-    const outerRadius = 0.0025 * 2* this.size;
-    const innerRadius = 0.0005 *  2 * this.size;
+    const outerRadius = 0.0025 * 2 * this.size;
+    const innerRadius = 0.0005 * 2 * this.size;
     this.appendToSvg(createCircle({
       x: centerX,
       y: centerY,
@@ -505,26 +559,18 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   }
 
-  private drawOuterBackground(item, center: Point, outerRadiusBorder, startAngle, endAngle) {
-    const backgroundItem = {color: item.color, value: 100};
-    const backgroundForOuterArc = createBarWithInArc({
-      startPoint: center,
-      item: backgroundItem,
-      radius: outerRadiusBorder,
-      maxScore: this.maxScore,
-      startAngle,
-      endAngle
-    });
 
-    this.insertAdjacentToSvg(this.outerBorderCircleRef, backgroundForOuterArc);
-  }
-
-  addArcText({arcForTextId, radius, startAngle, fontSize, endAngle, item}) {
+  addArcText({arcForTextId, radius, startAngle, fontSize, endAngle,perAngle, item}) {
     const elements = [];
     const {center} = this.globalPosition;
+    const [centerX, centerY] = [center.x, center.y];
     const arcForText = createArcToWriteText({id: arcForTextId, startPoint: center, radius, startAngle, endAngle});
     elements.push(arcForText);
-    elements.push(writeTextOnArc({text: item.name, pathId: arcForTextId, 'font-size': fontSize + 'px'}));
+    const distance = distanceBetweenTwoPoints(centerX, centerY,radius, startAngle, endAngle);
+
+
+    const label=getTextForAngle(item.name,distance,fontSize)
+    elements.push(writeTextOnArc({label, text:item.name, pathId: arcForTextId, 'font-size': fontSize + 'px'}));
     return elements;
   }
 
@@ -545,8 +591,8 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         x: centerX,
         y: centerY,
         radius: outerRadiusBorder,
-        fillColor: '#DE00AB',
-        "stroke-width": '5',
+        fillColor: 'none',
+        'stroke-width': '5',
         ref: this.outerBorderCircleRef
 
       });
@@ -555,7 +601,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
         x: centerX,
         y: centerY,
         radius: outerRadius,
-        fillColor: '#FFFFFF'
+        fillColor: 'none'
       });
       this.appendToSvg(outerCircle);
 

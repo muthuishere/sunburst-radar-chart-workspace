@@ -28,14 +28,20 @@ import {polarToCartesian} from './trignometry';
 export function splitCircleToAngles(num) {
 
   const perLocation = 360 / num;
+  const middleLocation = perLocation / 2;
+  const startMiddle = middleLocation;
 
-  const results = [];
+  const angles = [];
+  const middleAngles = [];
   for (let i = 1; i <= num; i++) {
 
     const currentDegree = i * perLocation;
-    results.push(currentDegree);
+    const middleDegree = startMiddle + (i * perLocation);
+    angles.push(currentDegree);
+    middleAngles.push(middleDegree);
   }
-  return results;
+  //return angles;
+  return {angles, middleAngles};
 
 
 }

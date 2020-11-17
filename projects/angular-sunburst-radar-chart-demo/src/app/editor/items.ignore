@@ -1,0 +1,43 @@
+
+export const exampleValues = [
+  {
+  'name': '9ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr',
+  'color': '#b24bb7',
+  'value': 100,
+  'children': [{'name': 'Backlog Clarity', 'value': 100}, {'name': 'Product Market Fit', 'value': 100}]
+}, {
+  'name': 'Plan and Coordinate',
+  'color': '#3bb54a',
+  'value': 100,
+  'children': [{'name': 'Prioritization and Sequencing', 'value': 100}, {
+    'name': 'Portfolio and Release Planning',
+    'value': 100
+  }, {'name': 'Manage Risks and Dependencies', 'value': 100}, {
+    'name': 'Strategy and Investment Funding',
+    'value': 100
+  }, {'name': 'Release Frequency', 'value': 100}, {'name': 'Governance', 'value': 100}]
+}, {
+  'name': 'Deliver the Solution',
+  'color': '#6351a2',
+  'value': 100,
+  'children': [{'name': 'Release Quality - Technical Practices', 'value': 100}, {
+    'name': 'Velocity and Throughput',
+    'value': 100
+  }, {'name': 'Measure Outcomes', 'value': 100}, {'name': 'Measure Progress', 'value': 100}, {
+    'name': 'Get Feedback',
+    'value': 100
+  }, {'name': 'Release Management', 'value': 100}]
+}, {
+  'name': 'Continuous Improvement',
+  'color': '#F351a2',
+  'value': 98,
+  'children': [{'name': 'Alignment', 'value': 100}, {'name': 'Technical Practice Metrics', 'value': 100}, {
+    'name': 'Assessments',
+    'value': 100
+  }, {'name': 'Throughput Metrics', 'value': 96}, {'name': 'Toolset', 'value': 100}]
+}, {
+  'name': 'Organization Enablement',
+  'color': '#3A3335',
+  'value': 100,
+  'children': [{'name': 'Teams', 'value': 100}, {'name': 'Roles', 'value': 100}]
+}];

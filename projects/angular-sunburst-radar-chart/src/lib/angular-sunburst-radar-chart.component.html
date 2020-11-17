@@ -25,6 +25,7 @@
           <path *ngSwitchCase="'path'"  [attr.d]="element.options.d" [attr.fill]=[element.options.fill]
 
                   [attr.stroke]="element.options['stroke']"
+                  [attr.stroke-width]="element.options['stroke-width']"
                   [attr.id]="element.options['id']"      >
 
             <title>{{element.options['title']}}</title>
@@ -51,7 +52,7 @@
             [attr.href]="element.options.href"
             [attr.startOffset]="element.options.startOffset"
             [attr.text-anchor]="element.options['text-anchor']"
-          >{{element.options['text']}}</textPath>
+          >{{element.options['label']}}</textPath>
           <title>{{element.options['title']}}</title>
           <ng-container *ngIf="animateChart">
           <animate

@@ -24,13 +24,50 @@ export function createArcToWriteText({startPoint, radius, id, startAngle, endAng
 }
 
 
+export function getTextForAngle(text, distance, fontSize) {
+
+
+  let result = text;
+
+
+  let perCharacter = 10.07;
+  if (fontSize < 18) {
+    perCharacter = 8.7;
+
+  }
+  //Max for 14 is 18
+  // len 9 distance 79.00696650144559 fontSize 14
+  //8.7 d per character for fs 14
+  //0.62 per distance  +
+
+  //total distance *0.035
+
+
+  //0.07
+//.015
+  //Max for 18 is 43
+  // len 42 distance 423 fontSize 18
+  //10.07 per char for fs 18
+  //0.559
+  //0.58 character by distance
+
+
+  const totalTextLength = Math.round(distance / perCharacter);
+  console.log('text ' + text + ' len ' + text.length + 'totalTextLength' + totalTextLength + ' distance' + distance + ' fontSize' + fontSize);
+  if (text.length > 0 && text.length > totalTextLength) {
+
+    result = text.substring(0, totalTextLength - 1) + '..';
+  }
+  return result;
+}
+
 export function writeTextOnArc(options) {
 
 
-  const defaults = {text: '', pathId: ''  ,      'font-size': '14px',  };
+  const defaults = {text: '', label: '', pathId: '', 'font-size': '14px',};
   options = {...defaults, ...(options || {})};
 
-  const {text, pathId} = options;
+  const {text, pathId, label} = options;
 
   if (pathId !== '') {
     options['href'] = '#' + pathId;
