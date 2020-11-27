@@ -43,3 +43,24 @@ export function generateRandomColor() {
   }
   return color;
 }
+
+export function formatItems(items) {
+
+  return items.map(item => {
+
+    if (!!item.children && item.children.length>0) {
+
+    } else {
+
+      item['children'] = [];
+      item['children'].push({name: '', value: 0});
+    }
+    return item;
+  });
+
+}
+
+export function getFormattedAngle(angle, center) {
+  const [centerX, centerY] = [center.x, center.y];
+  return 'rotate(' + angle + ' ' + centerX + ' ' + centerY + ')';
+}

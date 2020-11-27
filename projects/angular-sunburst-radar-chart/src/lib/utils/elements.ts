@@ -39,7 +39,7 @@ export function createLine(options) {
 
 export function createPath(options) {
 
-  const defaults = {d: '', fill: 'none', stroke: 'none', 'stroke-width': '0',title: '', id: null};
+  const defaults = {d: '', fill: 'none', stroke: 'none', 'stroke-width': '0', title: '', id: null};
   options = {...defaults, ...(getOptionsOrEmpty(options))};
 
   const {d, color, borderColor} = options;
@@ -48,6 +48,34 @@ export function createPath(options) {
   const path: AngularSvgElement = {name: 'path', options, children: []};
   return path;
 
+
+}
+
+export function createPathForBar(options) {
+
+  const defaults = {
+    d: '',
+    fill: 'none',
+    stroke: 'none',
+    'stroke-width': '0',
+    'stroke-opacity': '1.0',
+    'fill-opacity': '1.0',
+    title: '',
+    id: null
+  };
+  options = {...defaults, ...(getOptionsOrEmpty(options))};
+
+  const {d, color, borderColor} = options;
+
+
+  let gradName = options['fill'];
+  gradName = gradName.replace('#', '');
+
+  options['gradientId'] = gradName;
+  options['fillUrl'] = 'url(#' + gradName + ')';
+
+  const path: AngularSvgElement = {name: 'path-bar', options, children: []};
+  return path;
 
 
 }

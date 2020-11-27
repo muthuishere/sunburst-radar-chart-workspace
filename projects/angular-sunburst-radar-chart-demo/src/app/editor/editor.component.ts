@@ -11,33 +11,39 @@ export class EditorComponent implements OnInit {
 
   items = exampleValues;
 
-  updatedSize = 800;
-  updatedSizepx = this.updatedSize + 'px';
-  updatedMaxScore = 100;
-
-
-  size: number;
-  maxScore: number;
+  size: number=800;
+  maxScore: number=100;
+  legendAxisLinePosition=1;
   itemJson: any;
   error = null;
   submitting: any = false;
   animateChart = 'true';
-  updatedAnimateChart;
+  splitBasedOnChildren='true';
+
+
+  options = {size: this.size, maxScore: this.maxScore,legendAxisLinePosition:this.legendAxisLinePosition,
+    animateChart: (this.animateChart == 'true'),
+    splitBasedOnChildren: (this.splitBasedOnChildren == 'true')};
+
+
+
+
 
   constructor() {
   }
 
   ngOnInit(): void {
-    this.size = this.updatedSize;
-    this.maxScore = this.updatedMaxScore;
+
+
     this.itemJson = JSON.stringify(this.items, null, ' ');
-    this.updatedAnimateChart = (this.animateChart == 'true');
+
   }
 
   IsJsonString(str) {
     try {
       JSON.parse(str);
     } catch (e) {
+      this.error = 'Invalid JSON' + e.toString();
       return false;
     }
     return true;
@@ -47,21 +53,25 @@ export class EditorComponent implements OnInit {
 
     if (!this.IsJsonString(this.itemJson)) {
 
-      this.error = 'Invalid JSON';
+
       return;
     }
+
 
     this.submitting = true;
 
     setTimeout(() => {
       this.error = null;
-      this.updatedSize = this.size;
-      this.updatedSizepx = this.updatedSize + 'px';
-      this.updatedMaxScore = this.maxScore;
 
-      this.updatedAnimateChart = (this.animateChart == 'true');
 
-      console.log('max', this.updatedMaxScore);
+      this.options.size = this.size;
+
+      this.options.maxScore = this.maxScore;
+      this.options.legendAxisLinePosition = this.legendAxisLinePosition;
+
+      this.options.animateChart = (this.animateChart == 'true');
+      this.options.splitBasedOnChildren = (this.splitBasedOnChildren == 'true');
+
       this.items = JSON.parse(this.itemJson);
       this.submitting = false;
     }, 10);

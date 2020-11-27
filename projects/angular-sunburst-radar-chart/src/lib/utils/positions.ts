@@ -1,3 +1,5 @@
+import {polarToCartesian} from './trignometry';
+
 export interface Point {
   x: number;
   y: number;
@@ -98,6 +100,19 @@ export function getGlobalPositions({size, maxScore, items}) {
     outerTextRadius,
     center
   };
- // console.log('positions', result);
+
   return result;
+}
+
+
+export function calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius}) {
+
+
+
+  const start = polarToCartesian(centerX, centerY, radius, startAngle);
+  const middle = polarToCartesian(centerX, centerY, radius, middleAngle);
+  const end = polarToCartesian(centerX, centerY, radius, endAngle);
+
+  return {start, middle, end};
+
 }

@@ -1,6 +1,6 @@
 {
   "name": "angular-sunburst-radar-chart",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "author": {
     "name": "Muthukumaran Navaneethakrishnan",
     "url": "https://github.com/muthuishere"
@@ -21,6 +21,7 @@
   "description": "A Sunburst Radar chart with SVG,No Dependencies",
   "keywords": [
     "angular",
+    "animated chart",
     "chart",
     "sunburst chart",
     "svg chart",

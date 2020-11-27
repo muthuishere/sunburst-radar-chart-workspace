@@ -1,34 +1,60 @@
 import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {createCircle, createLine, createPath} from './utils/elements';
 import {createArcToWriteText, getTextForAngle, writeTextOnArc} from './utils/textelement';
-import {createBarWithInArc} from './utils/inner-bar';
-import {getGlobalPositions, GlobalPosition, Point} from './utils/positions';
+import {createInnerChartBarWithInArc, createOuterChartBarWithInArc} from './utils/arc-bar-charts';
+import {calculatePointBetween, getGlobalPositions, GlobalPosition} from './utils/positions';
 import {distanceBetweenTwoPoints, polarToCartesian} from './utils/trignometry';
 import {createLegends, createLegendWithOptions} from './utils/legend';
-import {generateRandomColor, getItemTitle, hashCode} from './utils/utils';
-import {getPointsOnCircleAtAngels, positionsOnAngles, splitAngles, splitCircleToAngles} from './utils/angels';
-import {convertToPercentage} from './utils/math';
+import {formatItems, generateRandomColor, getFormattedAngle, getOptionsOrEmpty, hashCode} from './utils/utils';
+import {getAllAnglesBasedOnChild, getAllAnglesBasedOnParent, getPointsOnCircleAtAngels, positionsOnAngles} from './utils/angels';
 import {AngularSvgElement} from './utils/models';
+
+import {createSvgHandlerWithSelector} from './utils/svg-rotator';
+
 
 
 @Component({
   selector: 'lib-sunburst-radar-chart',
   templateUrl: './angular-sunburst-radar-chart.component.html',
-  styles: []
+  styleUrls: ['./angular-sunburst-radar-chart.component.scss']
 })
 export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
-  @Input()
-  size: number;
+
+  constructor() {
+  }
+
+
+  showToolTip = false;
+  tooltipTopInPx = '0px';
+  tooltipLeftInPx = '0px';
+  tooltipText = '';
+  svgId = null;
+  svgGroupId = null;
+
+  svgHandler = null;
+
+  currentRotationAngle = 10;
+  rotationPoint;
+  svgCursor='default';
+
 
   @Input()
   items;
 
   @Input()
+  options;
+
+  size: number;
+
+
   maxScore: number;
 
-  @Input()
+  legendAxisLinePosition: number;
+
   animateChart;
+
+  splitBasedOnChildren;
 
   viewBox;
 
@@ -44,11 +70,22 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   hasChildren = false;
   chartBorder;
   outerBorderCircleRef = 'outerBorderCircle';
+  error: any = null;
+  hasError = false;
 
+  startRotation = false;
 
-  constructor() {
+  showError(msg) {
+
+    this.error = msg;
+    this.hasError = true;
   }
 
+  hideError() {
+
+    this.error = null;
+    this.hasError = false;
+  }
 
   appendToSvg(element: AngularSvgElement) {
 
@@ -59,29 +96,47 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
 
 
+    this.hideError();
     const isFirstChange = Object.values(changes).some(c => c.isFirstChange());
-
-    if (!isFirstChange) {
-
-      this.initialize();
-    }
+    this.modifyOnFirstChange(isFirstChange);
 
 
   }
 
+  modifyOnFirstChange(isFirstChange: boolean) {
+    if (!isFirstChange) {
+
+      this.initialize();
+    }
+  }
+
   ngOnInit(): void {
+    this.hideError();
     this.initialize();
   }
 
 
   initialize(): void {
 
-    if (this.hasValuesSet()) {
+
+    const defaults = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: true, legendAxisLinePosition: 1};
+    const options = {...defaults, ...(getOptionsOrEmpty(this.options))};
+
+    this.size = options.size;
+    this.maxScore = options.maxScore;
+    this.animateChart = options.animateChart;
+    this.splitBasedOnChildren = options.splitBasedOnChildren;
+    this.legendAxisLinePosition = options.legendAxisLinePosition;
 
 
+    if (!this.hasValidParameters()) {
+
+      this.showError('Input Values not set or Items was improper');
       return;
     }
     this.initialized = false;
+    this.svgId = 'svg' + hashCode(this.items);
+    this.svgGroupId = 'svg-group' + hashCode(this.items);
 
 
     this.viewBox = '0 0 ' + this.size + ' ' + this.size;
@@ -108,16 +163,24 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     const {innerRadius, innerTextRadius, textSize, outerTextSize, outerRadiusBorder, outerTextRadius, center} = this.globalPosition;
     const [centerX, centerY] = [center.x, center.y];
 
-    const items = this.items;
+    let items = this.items;
+    let allAngels = [];
     const hasChildren = this.hasChildren;
 
-    const {angles, middleAngles} = splitCircleToAngles(items.length);
+    if (this.splitBasedOnChildren) {
 
-    let angleDifference = 0;
-    if (angles.length > 1) {
-      angleDifference = angles[1] - angles[0];
+      // Cannot have no children
+      items = formatItems(items);
+      allAngels = getAllAnglesBasedOnChild(items);
+    } else {
+      allAngels = getAllAnglesBasedOnParent(items);
     }
 
+
+    const angleDifference = 360 / items.length;
+
+    const angles = allAngels.map(value => value.startDegree);
+    const middleAngles = allAngels.map(value => value.middleDegree);
     const points = positionsOnAngles(centerX, centerY, this.chartBorder, angles);
 
     const lines = [];
@@ -146,22 +209,23 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       if (!!item.color === false) {
 
 
-        const defaults = {
+        const colorDefaults = {
           color: generateRandomColor()
         };
-        item = {...defaults, ...item};
+        item = {...colorDefaults, ...item};
 
       }
 
 
-      if (item.children && item.children.length > 0) {
+      if (this.hasChildren && item.children && item.children.length > 0) {
+
+        const childAngels = allAngels[i].children;
 
 
         nextLevelElements = nextLevelElements.concat(this.drawOnLevel({
           items: item.children,
           totalDegrees: angleDifference,
-          startDegree: startAngle,
-          endDegree: endAngle,
+          childAngels,
           color: item.color
         }));
 
@@ -172,7 +236,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
 
       // Create Arc for inner values
-      const barWithinArc = createBarWithInArc({
+      const barWithinArc = createInnerChartBarWithInArc({
         startPoint: center,
         item,
         radius: innerRadius,
@@ -233,170 +297,73 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       this.appendToSvg(line);
 
     });
+    const legendAxisIndex = this.getLegendAxisIndex(angles);
 
-
-    this.drawLegends(angles[0]);
+    this.drawLegends(angles[legendAxisIndex]);
     this.addSmallCirclesAtCenter(centerX, centerY);
 
     this.initialized = true;
-  }
 
 
-  hasValuesSet() {
-    return !this.size || !this.items;
-  }
-
-  calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius}) {
-
-
-    if (startAngle >= 360) {
-      startAngle = startAngle % 360;
-    }
-    if (endAngle >= 360) {
-      endAngle = endAngle % 360;
-    }
-
-    if (middleAngle >= 360) {
-      middleAngle = middleAngle % 360;
-    }
-
-    let start = polarToCartesian(centerX, centerY, radius, startAngle);
-    let middle = polarToCartesian(centerX, centerY, radius, middleAngle);
-    let end = polarToCartesian(centerX, centerY, radius, endAngle);
-
-    return {start, middle, end};
+    this.currentRotationAngle = 10;
+    this.rotationPoint = getFormattedAngle(this.currentRotationAngle, center);
 
   }
+
+
+  getLegendAxisIndex(angles: any[]) {
+    let legendAxisIndex = this.legendAxisLinePosition - 1;
+    if (legendAxisIndex < 0 || legendAxisIndex >= angles.length) {
+      legendAxisIndex = 0;
+    }
+    return legendAxisIndex;
+  }
+
+  hasValidParameters() {
+
+    return this.items && this.items.length > 1;
+  }
+
 
   drawOuterBackgroundWithMiddle({item, startAngle, middleAngle, endAngle}) {
 
 
-    let color = item.color;
+    const color = item.color;
 
-    const {outerRadius, outerRadiusBorder, center} = this.globalPosition;
+    const {outerTextRadius, center} = this.globalPosition;
 
     const [centerX, centerY] = [center.x, center.y];
 
 
-    const startCircle = this.calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius: outerRadius});
-    const endCircle = this.calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius: outerRadiusBorder});
+    const middleCircle = calculatePointBetween({centerX, centerY, startAngle, middleAngle, endAngle, radius: outerTextRadius});
 
 
-    // 1, 0, 1  = To Draw arc start to end
-    // 1, 0, 0  = To Draw arc end to start
     const d = [
 
-      'M', startCircle.start.x, startCircle.start.y,
-      'L', endCircle.start.x, endCircle.start.y,
-      'L', startCircle.start.x, startCircle.start.y,
-      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 1, startCircle.middle.x, startCircle.middle.y,
-      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 1, startCircle.end.x, startCircle.end.y,
-      'L', endCircle.end.x, endCircle.end.y,
-      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 0, endCircle.middle.x, endCircle.middle.y,
-      'A', outerRadiusBorder, outerRadiusBorder, 1, 0, 0, endCircle.start.x, endCircle.start.y,
-      'Z'
+      'M', middleCircle.start.x, middleCircle.start.y,
+      'A', outerTextRadius, outerTextRadius, 0, 0, 1, middleCircle.end.x, middleCircle.end.y
 
 
     ];
 
     const title = item.name + '-' + item.value;
 
-    return createPath({d: d.join(' '), fill: color, title});
+    const strokeWidth = 0.0775 * this.size;
+    return createPath({d: d.join(' '), stroke: color, 'stroke-width': strokeWidth, title});
 
   }
 
-  createLevelChartWith({item, startAngle, endAngle, middleAngle, color, index}) {
 
-    const {middleRadius, innerRadiusBorder, center} = this.globalPosition;
-
-    const [centerX, centerY] = [center.x, center.y];
-
-
-    if (startAngle >= 360) {
-      startAngle = startAngle % 360;
-    }
-    if (endAngle >= 360) {
-      endAngle = endAngle % 360;
-    }
-
-
-    if (middleAngle >= 360) {
-      middleAngle = middleAngle % 360;
-    }
-
-
-    const currentVal = item.value;
-
-
-    const totalRadiusInside = middleRadius - innerRadiusBorder;
-
-    const innerRadius = convertToPercentage({plotMax: totalRadiusInside, actualScore: currentVal, maxScore: this.maxScore});
-    const radiusFromCenter = innerRadius + innerRadiusBorder;
-
-
-    let firstPoint = polarToCartesian(centerX, centerY, radiusFromCenter, startAngle);
-    let secondPoint = polarToCartesian(centerX, centerY, radiusFromCenter, endAngle);
-
-
-    const startPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, startAngle);
-    const endPoint = polarToCartesian(centerX, centerY, innerRadiusBorder, endAngle);
-
-
-    const startMiddlePoint = polarToCartesian(centerX, centerY, innerRadiusBorder, middleAngle);
-
-    const distFromStartToFirst = Math.sqrt(Math.pow((startPoint.x - firstPoint.x), 2) + Math.pow((startPoint.y - firstPoint.y), 2));
-    const distFromStartToSecond = Math.sqrt(Math.pow((startPoint.x - secondPoint.x), 2) + Math.pow((startPoint.y - secondPoint.y), 2));
-
-
-    const {updatedFirstPoint, updatedSecondPoint} = this.getUpdatedPoints( firstPoint, secondPoint,distFromStartToFirst,distFromStartToSecond);
-
-
-    const d = this.getDrawPositions(updatedFirstPoint, middleRadius, updatedSecondPoint, endPoint, startMiddlePoint, startPoint);
-
-
-    const title = getItemTitle(item);
-
-    return createPath({d: d.join(' '), stroke: 'none', fill: color, title});
-  }
-
-
-   getUpdatedPoints( firstPoint: Point, secondPoint: Point,distFromStartToFirst,distFromStartToSecond) {
-
-    let [updatedFirstPoint, updatedSecondPoint] = [firstPoint, secondPoint];
-
-    if (distFromStartToSecond < distFromStartToFirst) {
-      updatedSecondPoint = firstPoint;
-      updatedFirstPoint = secondPoint;
-
-
-    }
-    return {updatedSecondPoint, updatedFirstPoint};
-  }
-
-  private getDrawPositions(firstPoint: { x: any; y: any }, middleRadius, secondPoint: { x: any; y: any }, endPoint: { x: any; y: any }, startMiddlePoint: { x: any; y: any }, startPoint: { x: any; y: any }) {
-    const d = [
-
-      'M', firstPoint.x, firstPoint.y,
-      'A', middleRadius, middleRadius, 0, 0, 1, secondPoint.x, secondPoint.y,
-      'L', endPoint.x, endPoint.y,
-      'C', endPoint.x, endPoint.y, startMiddlePoint.x, startMiddlePoint.y, startPoint.x, startPoint.y,
-      'L', firstPoint.x, firstPoint.y,
-      'Z'
-
-
-    ];
-    return d;
-  }
-
-  drawOnLevel({items, totalDegrees, startDegree, endDegree, color}) {
+  drawOnLevel({items, totalDegrees, childAngels, color}) {
 
 
     const {innerRadiusBorder, middleRadius, textSize, middleTextRadius, center} = this.globalPosition;
     const [centerX, centerY] = [center.x, center.y];
 
 
-    const {angles, middleAngles} = splitAngles(items.length, totalDegrees, startDegree);
-
+    const angles = childAngels.map(item => item.startDegree);
+    const middleAngles = childAngels.map(item => item.middleDegree);
+    const endAngles = childAngels.map(item => item.endDegree);
     const perAngle = totalDegrees / items.length;
 
     const pointsOnInnerRadiusBorder = getPointsOnCircleAtAngels(centerX, centerY, innerRadiusBorder, angles);
@@ -409,7 +376,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     const lines = [];
 
 
-    let currentDegree = startDegree;
+    let currentDegree = angles[0];
 
     for (let i = 0; i < pointsOnInnerRadiusBorder.length; i++) {
 
@@ -423,25 +390,30 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
       }));
 
 
-      const endAngleIndex = i + 1;
-      let endAngle;
       const startAngle = angles[i];
       const middleAngle = middleAngles[i];
-      if (endAngleIndex >= pointsOnInnerRadiusBorder.length) {
-
-        endAngle = endDegree;
-
-      } else {
-        endAngle = angles[endAngleIndex];
-      }
+      const endAngle = endAngles[i];
 
 
       const item = items[i];
 
 
-      const params = {startPoint: pointOnInnerRadiusBorder, item, startAngle, endAngle, middleAngle, color, index: i};
+      const params = {
+        startPoint: pointOnInnerRadiusBorder,
+        item,
+        startAngle,
+        endAngle,
+        middleAngle,
+        middleRadius,
+        innerRadiusBorder,
+        center,
+        maxScore: this.maxScore,
+        color,
+        index: i
+      };
 
-      const arcForChart = this.createLevelChartWith(params);
+
+      const arcForChart = createOuterChartBarWithInArc(params);
 
       elements.push(arcForChart);
 
@@ -537,17 +509,18 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     const startFrom = polarToCartesian(centerX, centerY, innerRadiusBorder, degreeToBeDrawn);
 
-    const nextLevelLegends = createLegendWithOptions({
-      startPoint: startFrom,
-      center,
-      startRadius: innerRadiusBorder,
-      endRadius: middleRadius,
-      maxScore,
-      degreeToBeDrawn
-    });
+    if (this.hasChildren) {
+      const nextLevelLegends = createLegendWithOptions({
+        startPoint: startFrom,
+        center,
+        startRadius: innerRadiusBorder,
+        endRadius: middleRadius,
+        maxScore,
+        degreeToBeDrawn
+      });
 
-    legends = legends.concat(nextLevelLegends);
-
+      legends = legends.concat(nextLevelLegends);
+    }
     legends.forEach(elem => {
       this.appendToSvg(elem);
     });
@@ -607,6 +580,66 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
     this.appendToSvg(createCircle({x: centerX, y: centerY, radius: innerRadiusEnd}));
     this.appendToSvg(createCircle({x: centerX, y: centerY, radius: innerRadiusBorderEnd}));
+  }
+
+  hideTooltip() {
+    this.showToolTip = false;
+  }
+
+  showTooltipText($event: any, text: any) {
+    this.tooltipLeftInPx = $event.pageX + 10 + 'px';
+    this.tooltipTopInPx = $event.pageY + 10 + 'px';
+    this.tooltipText = text;
+
+    this.showToolTip = true;
+
+
+  }
+
+
+
+  stopRotate() {
+    this.svgCursor="default"
+    this.startRotation = false;
+  }
+
+  onOutOfComponent() {
+
+    this.hideTooltip();
+    this.stopRotate();
+  }
+
+
+  startRotate($event: MouseEvent) {
+
+    this.startRotation = true;
+    this.svgCursor="grab"
+    const {outerRadiusBorder, center} = this.globalPosition;
+
+    this.svgHandler = createSvgHandlerWithSelector('#' + this.svgId, center);
+    this.svgHandler.startDrag($event, this.currentRotationAngle);
+
+    $event.preventDefault();
+
+  }
+
+
+  rotateChart($event: MouseEvent) {
+
+
+
+    if (this.startRotation == false) {
+      return;
+    }
+    this.svgCursor="grabbing"
+    const {center} = this.globalPosition;
+
+    this.currentRotationAngle = this.svgHandler.getRotationAngle($event);
+
+
+    this.rotationPoint = getFormattedAngle(Math.round(this.currentRotationAngle), center);
+
+
   }
 
 }

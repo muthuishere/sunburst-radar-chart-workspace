@@ -5,7 +5,57 @@ import {getMaxDepth} from './utils/positions';
 import {clone, getItemTitle, getOptionsOrEmpty, hashCode} from './utils/utils';
 import {SimpleChange} from '@angular/core';
 import {convertToPercentage} from './utils/math';
+import {getUpdatedPoints} from './utils/arc-bar-charts';
+import {getAllAnglesBasedOnChild, getAllAnglesBasedOnParent} from './utils/angels';
+import {getLargeArcFlag} from './utils/trignometry';
+import {By} from '@angular/platform-browser';
 
+
+const itemsWithChildren = [
+  {
+    name: 'Delaware ',
+    color: '#b24bb7',
+    value: 100,
+    children: [{name: 'Kent County', value: 100}, {name: 'New Castle County', value: 100}, {name: 'Sussex County', value: 100}]
+  },
+  {
+    name: 'Hawaii ',
+    value: 95,
+    color: '#3bb54a',
+    children: [{name: 'Hawaii County', value: 95}, {name: 'Honolulu County', value: 95}, {
+      name: 'Kauai County',
+      value: 95
+    }, {name: 'Maui County', value: 95}]
+  },
+  {
+    name: 'District of Columbia ',
+    color: '#6351a2',
+    value: 89,
+    children: [{name: 'District of Columbia', value: 83}, {name: 'Ward 2', value: 79}, {name: 'Ward 3', value: 84}, {
+      name: 'Ward 4',
+      value: 88
+    }, {name: 'Ward 5', value: 94}, {name: 'Ward 6', value: 95}, {name: 'Ward 7', value: 94}, {name: 'Ward 8', value: 92}]
+  },
+  {
+    name: 'Arizona ',
+    value: 98,
+    color: '#F351a2',
+    children: [{name: 'Navajo County', value: 99}, {name: 'Maricopa County', value: 95}, {name: 'Mohave County', value: 99}]
+  }
+];
+
+const itemsWithNoChildren = [
+  {
+    name: 'Arizona a ',
+    value: 98,
+    color: '#F351a2'
+  },
+  {
+    name: 'Arizona ',
+    value: 98,
+    color: '#F351a2'
+  }
+];
 describe('AngularSunburstRadarChartComponent', () => {
   let component: AngularSunburstRadarChartComponent;
   let fixture: ComponentFixture<AngularSunburstRadarChartComponent>;
@@ -138,7 +188,7 @@ describe('AngularSunburstRadarChartComponent', () => {
     const secondPoint = {x: 30, y: 50};
     const distFromStartToFirst = 25;
     const distFromStartToSecond = 50;
-    const {updatedSecondPoint, updatedFirstPoint} = component.getUpdatedPoints(firstPoint, secondPoint, distFromStartToFirst, distFromStartToSecond);
+    const {updatedSecondPoint, updatedFirstPoint} = getUpdatedPoints(firstPoint, secondPoint, distFromStartToFirst, distFromStartToSecond);
     expect(updatedSecondPoint).toEqual(secondPoint);
     expect(updatedFirstPoint).toEqual(firstPoint);
   });
@@ -150,56 +200,129 @@ describe('AngularSunburstRadarChartComponent', () => {
     const secondPoint = {x: 30, y: 50};
     const distFromStartToFirst = 55;
     const distFromStartToSecond = 50;
-    const {updatedSecondPoint, updatedFirstPoint} = component.getUpdatedPoints(firstPoint, secondPoint, distFromStartToFirst, distFromStartToSecond);
+    const {updatedSecondPoint, updatedFirstPoint} = getUpdatedPoints(firstPoint, secondPoint, distFromStartToFirst, distFromStartToSecond);
     expect(updatedSecondPoint).toEqual(firstPoint);
     expect(updatedFirstPoint).toEqual(secondPoint);
+  });
+
+  it('Tests on tooltip', () => {
+    expect(component).toBeTruthy();
+
+    component.showTooltipText({pageX: 34, pageY: 43}, 'Ho');
+    expect(component.showToolTip).toEqual(true);
+    expect(component.tooltipText).toEqual('Ho');
+    component.hideTooltip();
+    expect(component.showToolTip).toEqual(false);
+
   });
 
   it('No color should generate random', () => {
     expect(component).toBeTruthy();
 
-    const items = [{
-      name: 'Delaware ',
-      color: '#b24bb7',
-      value: 100,
-      children: [{name: 'Kent County', value: 100}, {name: 'New Castle County', value: 100}, {name: 'Sussex County', value: 100}]
-    },
-      {
-        name: 'Hawaii ',
-        value: 95,
-        color: '#3bb54a',
-        children: [{name: 'Hawaii County', value: 95}, {name: 'Honolulu County', value: 95}, {
-          name: 'Kauai County',
-          value: 95
-        }, {name: 'Maui County', value: 95}]
-      },
-      {
-        name: 'District of Columbia ',
-        color: '#6351a2',
-        value: 89,
-        children: [{name: 'District of Columbia', value: 83}, {name: 'Ward 2', value: 79}, {name: 'Ward 3', value: 84}, {
-          name: 'Ward 4',
-          value: 88
-        }, {name: 'Ward 5', value: 94}, {name: 'Ward 6', value: 95}, {name: 'Ward 7', value: 94}, {name: 'Ward 8', value: 92}]
-      },
-      {
-        name: 'Arizona ',
-        value: 98,
-        color: '#F351a2',
-        children: [{name: 'Navajo County', value: 99}, {name: 'Maricopa County', value: 95}, {name: 'Mohave County', value: 99}]
-      }
-    ];
+
+    component.items = itemsWithChildren;
 
 
-    component.size = 800;
-    component.items = items;
-    component.maxScore = 100;
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
     component.ngOnInit();
     fixture.detectChanges();
     expect(component.hasChildren).toBe(true);
 
 
   });
+
+
+  it('modifyOnFirstChange should initialize if its first change', () => {
+    expect(component).toBeTruthy();
+
+
+    component.items = itemsWithChildren;
+
+
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
+    component.modifyOnFirstChange(true);
+
+
+
+
+  });
+  it('Start Rotate tests', () => {
+    expect(component).toBeTruthy();
+
+
+    component.items = itemsWithChildren;
+
+
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
+    component.ngOnInit();
+    fixture.detectChanges();
+    const groupElement = fixture.debugElement.query(By.css('#' +component.svgGroupId));
+    const mouseDownEvent = new MouseEvent('mousedown');
+    groupElement.nativeElement.dispatchEvent(mouseDownEvent);
+
+    fixture.detectChanges();
+
+
+    const mouseMoveEvent = new MouseEvent('mousemove');
+    groupElement.nativeElement.dispatchEvent(mouseMoveEvent);
+
+    fixture.detectChanges();
+
+    expect(component.startRotation).toBeTrue();
+
+
+
+
+
+  });
+  it('Start Rotate tests - out of component', () => {
+    expect(component).toBeTruthy();
+
+
+    component.items = itemsWithChildren;
+
+
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
+    component.ngOnInit();
+    fixture.detectChanges();
+    component.onOutOfComponent();
+    expect(component.startRotation).toBeFalse()
+    expect(component.showToolTip).toBeFalse()
+
+
+
+  });
+ it('Start Rotate tests - should not draw if mouse is not dragged', () => {
+    expect(component).toBeTruthy();
+
+
+    component.items = itemsWithChildren;
+
+
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
+    component.ngOnInit();
+    fixture.detectChanges();
+    component.startRotation=false
+const existingRotationPoint = component.rotationPoint
+   component.rotateChart(null)
+    expect(component.rotationPoint).toEqual(existingRotationPoint)
+
+
+
+  });
+
+
+
   it('Ensure When items does not have children hasChildren should be false', () => {
     expect(component).toBeTruthy();
 
@@ -227,6 +350,18 @@ describe('AngularSunburstRadarChartComponent', () => {
     });
 
 
+  });
+
+  it('Legend Axis Index should return 0 if angles is empty array or greater than size of angles array', () => {
+
+
+    const angles = [80, 90];
+    component.legendAxisLinePosition = 0;
+
+    expect(component.getLegendAxisIndex(angles)).toBe(0);
+
+    component.legendAxisLinePosition = 3;
+    expect(component.getLegendAxisIndex(angles)).toBe(0);
   });
 });
 
@@ -358,5 +493,41 @@ describe('math tests', () => {
 
 
     expect(convertToPercentage({plotMax: 100, actualScore: 156, maxScore: 100})).toEqual(100);
+  });
+});
+describe('trignometry tests', () => {
+
+  it('getLargeArcFlag should return 1 if the difference of endAngle and Start Angle Less Than 180', () => {
+
+
+    expect(getLargeArcFlag(100, 300)).toEqual('1');
+  });
+});
+
+describe('textelement tests', () => {
+
+  it('getLargeArcFlag should return 1 if the difference of endAngle and Start Angle Less Than 180', () => {
+
+
+    expect(getLargeArcFlag(100, 300)).toEqual('1');
+  });
+});
+describe('angle tests', () => {
+
+  it('calling getAllAnglesBasedOnChild with items of no child nodes should not set children angles', () => {
+
+    const allAngles = getAllAnglesBasedOnChild(itemsWithNoChildren);
+    const childCount = allAngles.filter(currentItem => !!currentItem['children']).length;
+    expect(childCount).toEqual(0);
+
+
+  });
+  it('calling getAllAnglesBasedOnParent with items of no child nodes should not set children angles', () => {
+
+    const allAngles = getAllAnglesBasedOnParent(itemsWithNoChildren);
+    const childCount = allAngles.filter(currentItem => !!currentItem['children']).length;
+    expect(childCount).toEqual(0);
+
+
   });
 });

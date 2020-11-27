@@ -18,7 +18,7 @@ export function createLegendWithOptions({startPoint, center, startRadius, endRad
 
   const groups = [1, 2, 3]
     .map(val => {
-      return {radius: val * legendRadius, content: val * axisIncrement};
+      return {radius: val * legendRadius, content: Math.round(val * axisIncrement) };
     })
     .map(res => {
 

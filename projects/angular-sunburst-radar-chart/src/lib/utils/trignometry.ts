@@ -9,6 +9,11 @@ export function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
   };
 }
 
+export function getLargeArcFlag(startAngle,endAngle){
+
+
+  return (endAngle - startAngle) <= 180 ? '0' : '1';
+}
 export function distanceBetweenTwoPoints(centerX, centerY, radius, startAngle, endAngle) {
 
   const startPoint = polarToCartesian(centerX, centerY, radius, startAngle);

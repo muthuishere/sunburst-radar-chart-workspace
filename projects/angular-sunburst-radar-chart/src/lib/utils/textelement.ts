@@ -1,5 +1,5 @@
 import {createPath} from './elements';
-import {polarToCartesian} from './trignometry';
+import {getLargeArcFlag, polarToCartesian} from './trignometry';
 import {AngularSvgElement} from './models';
 import {getOptionsOrEmpty} from './utils';
 
@@ -10,8 +10,8 @@ export function createArcToWriteText({startPoint, radius, id, startAngle, endAng
 
   const start = polarToCartesian(centerX, centerY, radius, endAngle);
   const end = polarToCartesian(centerX, centerY, radius, startAngle);
+  const largeArcFlag = getLargeArcFlag(startAngle, endAngle);
 
-  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
 
   const d = [
     'M', start.x, start.y,
@@ -37,7 +37,6 @@ export function getTextForAngle(text, distance, fontSize) {
 
   }
   const totalTextLength = Math.round(distance / perCharacter);
- // console.log('text ' + text + ' len ' + text.length + 'totalTextLength' + totalTextLength + ' distance' + distance + ' fontSize' + fontSize);
   if (text.length > 0 && text.length > totalTextLength) {
 
     result = text.substring(0, totalTextLength - 1) + '..';
@@ -64,25 +63,6 @@ export function writeTextOnArc(options) {
   const textOnArc: AngularSvgElement = {name: 'text-on-arc', options, children: []};
   return textOnArc;
 
-  //
-  // const textPath = document.createElementNS(svgns, "textPath");
-  // textPath.setAttribute("href", "#" + pathId);
-  // textPath.setAttribute("startOffset", "50%");
-  // textPath.setAttribute("text-anchor", "middle");
-  //
-  // textPath.innerHTML = text
-  //
-  //
-  // const textElem = document.createElementNS(svgns, "text");
-  // textElem.appendChild(textPath)
-  //
-  //
-  // textElem.appendChild(createTitle(text))
-  //
-  // //<title>I'm a circle</title>
-  //
-  // return textElem
-
 
 }
 
@@ -100,19 +80,6 @@ export function createText(options) {
 
   const textElement: AngularSvgElement = {name: 'text', options, children: []};
   return textElement;
-  // const {content, x, y, color, size} = options
-  //
-  // const textElem = document.createElementNS(svgns, "text");
-  // textElem.setAttribute("x", x)
-  // textElem.setAttribute("y", y)
-  // textElem.setAttribute("text-anchor", "middle")
-  // textElem.setAttribute("stroke", color)
-  // textElem.setAttribute("stroke-width", "1px")
-  // textElem.setAttribute("font-size", size)
-  // textElem.innerHTML = content
-  // textElem.appendChild(createTitle(content))
-
-  //return textElem;
 
 
 }

@@ -1,0 +1,15 @@
+.app-tooltip {
+  background: cornsilk;  border: 1px solid black;  border-radius: 5px;  padding: 5px;  z-index: 1002;
+}
+
+.growAnimation {
+  -moz-transition: transform 2s ease-in-out 0s;
+  -webkit-transition: transform 2s ease-in-out 0s;
+  -o-transition: transform 2s ease-in-out 0s;
+
+  transform: scale(1);
+}
+
+.growAnimation:active {
+  transform: scale(0.5);
+}

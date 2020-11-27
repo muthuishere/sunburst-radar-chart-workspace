@@ -3,10 +3,10 @@
 <table>
   <tr>
     <td>
-      <div *ngIf="!submitting" [ngStyle]="{'min-width.px': updatedSize,'width.px': updatedSize}" >
+      <div *ngIf="!submitting" [ngStyle]="{'min-width.px': options.size,'width.px': options.size}" >
 
 
-        <lib-sunburst-radar-chart  [size]="updatedSize" [animateChart]="updatedAnimateChart" [maxScore]="updatedMaxScore" [items]="items"></lib-sunburst-radar-chart>
+        <lib-sunburst-radar-chart  [options]="options"  [items]="items"></lib-sunburst-radar-chart>
 
       </div>
     </td>
@@ -19,6 +19,19 @@
         <div class="form-group ">
           <label for="maxScore" >Max Score</label>
           <input type="number" class="form-control" id="maxScore" name="maxScore" [(ngModel)]="maxScore">
+        </div>
+        <div class="form-group ">
+          <label for="legendAxisLinePosition" >Legend Line On</label>
+          <input type="number" class="form-control" id="legendAxisLinePosition" name="legendAxisLinePosition" [(ngModel)]="legendAxisLinePosition">
+        </div>
+
+
+        <div class="form-group ">
+          <label for="splitBasedOnChildren" >Split Chart Based on Children</label>
+          <select id="splitBasedOnChildren" name="splitBasedOnChildren" [(ngModel)]="splitBasedOnChildren" class="form-control">
+            <option value="true">true</option>
+            <option  value="false">false</option>
+          </select>
         </div>
    <div class="form-group ">
           <label for="animateChart" >Animate</label>
