@@ -1,3 +1,5 @@
+import {getCurrentPointFromEvent} from './utils';
+import {calculateAngleRadian} from './trignometry';
 
 export function createSvgHandlerWithSelector(selectorName, center) {
   const svg = document.querySelector(selectorName);
@@ -11,9 +13,12 @@ export function createSvgHandlerWithSelector(selectorName, center) {
   return {
 
     initPoint: 0,
+
+
     cursorPoint(evt) {
-      pt.x = evt.clientX;
-      pt.y = evt.clientY;
+      const {x, y} = getCurrentPointFromEvent(evt);
+      pt.x = x;
+      pt.y = y;
       return pt.matrixTransform(svg.getScreenCTM().inverse());
 
     },
@@ -21,8 +26,7 @@ export function createSvgHandlerWithSelector(selectorName, center) {
       this.previousPoint = this.angleFromCenter(evt);
       this.initPoint = initialPoint;
     },
-    getRotationAngle(evt) {
-      const currentPoint = this.angleFromCenter(evt);
+    updateInitPointFromCurrentPoint(currentPoint) {
 
       const difference = Math.abs(this.previousPoint - currentPoint);
       if (currentPoint < this.previousPoint) {
@@ -30,6 +34,12 @@ export function createSvgHandlerWithSelector(selectorName, center) {
       } else {
         this.initPoint -= difference;
       }
+
+    },
+    getRotationAngle(evt) {
+      const currentPoint = this.angleFromCenter(evt);
+
+      this.updateInitPointFromCurrentPoint(currentPoint);
       this.previousPoint = currentPoint;
 
       return this.initPoint;
@@ -41,13 +51,7 @@ export function createSvgHandlerWithSelector(selectorName, center) {
       const [centerX, centerY] = [center.x, center.y];
       const {x, y} = this.cursorPoint(evt);
 
-      let angleInRadian = Math.atan2(x - centerY, y - centerX);
-
-      angleInRadian += maxRad / 4;
-      if (angleInRadian < 0) {
-        angleInRadian += maxRad;
-      }
-
+      const angleInRadian = calculateAngleRadian({x, y, centerX, centerY, maxRad});
       const currentDegree = maxDeg * angleInRadian / (2 * Math.PI);
       return currentDegree;
 

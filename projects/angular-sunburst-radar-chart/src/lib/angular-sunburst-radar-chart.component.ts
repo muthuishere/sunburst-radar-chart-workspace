@@ -1,4 +1,4 @@
-import {Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {AfterViewInit, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
 import {createCircle, createLine, createPath} from './utils/elements';
 import {createArcToWriteText, getTextForAngle, writeTextOnArc} from './utils/textelement';
 import {createInnerChartBarWithInArc, createOuterChartBarWithInArc} from './utils/arc-bar-charts';
@@ -12,7 +12,6 @@ import {AngularSvgElement} from './utils/models';
 import {createSvgHandlerWithSelector} from './utils/svg-rotator';
 
 
-
 @Component({
   selector: 'lib-sunburst-radar-chart',
   templateUrl: './angular-sunburst-radar-chart.component.html',
@@ -21,10 +20,12 @@ import {createSvgHandlerWithSelector} from './utils/svg-rotator';
 export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
 
+
   constructor() {
   }
 
 
+  componentDisplayed=false;
   showToolTip = false;
   tooltipTopInPx = '0px';
   tooltipLeftInPx = '0px';
@@ -36,7 +37,7 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
 
   currentRotationAngle = 10;
   rotationPoint;
-  svgCursor='default';
+  svgCursor = 'default';
 
 
   @Input()
@@ -309,6 +310,9 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
     this.rotationPoint = getFormattedAngle(this.currentRotationAngle, center);
 
   }
+
+
+
 
 
   getLegendAxisIndex(angles: any[]) {
@@ -597,23 +601,21 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   }
 
 
-
-  stopRotate() {
-    this.svgCursor="default"
-    this.startRotation = false;
-  }
-
   onOutOfComponent() {
 
     this.hideTooltip();
     this.stopRotate();
   }
 
+  stopRotate() {
+    this.svgCursor = 'default';
+    this.startRotation = false;
+  }
 
-  startRotate($event: MouseEvent) {
+  startRotate($event: any) {
 
     this.startRotation = true;
-    this.svgCursor="grab"
+    this.svgCursor = 'grab';
     const {outerRadiusBorder, center} = this.globalPosition;
 
     this.svgHandler = createSvgHandlerWithSelector('#' + this.svgId, center);
@@ -624,14 +626,13 @@ export class AngularSunburstRadarChartComponent implements OnInit, OnChanges {
   }
 
 
-  rotateChart($event: MouseEvent) {
-
+  rotateChart($event: any) {
 
 
     if (this.startRotation == false) {
       return;
     }
-    this.svgCursor="grabbing"
+    this.svgCursor = 'grabbing';
     const {center} = this.globalPosition;
 
     this.currentRotationAngle = this.svgHandler.getRotationAngle($event);

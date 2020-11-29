@@ -25,6 +25,7 @@ export function createArcToWriteText({startPoint, radius, id, startAngle, endAng
 }
 
 
+
 export function getTextForAngle(text, distance, fontSize) {
 
 

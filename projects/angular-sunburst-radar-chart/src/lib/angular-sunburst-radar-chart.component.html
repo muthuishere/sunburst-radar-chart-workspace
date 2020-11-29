@@ -50,10 +50,14 @@ padding: 15px;
   (mousemove)="rotateChart($event);"
   (mousedown)="startRotate($event)"
   (mouseup)="stopRotate()"
+  (touchmove)="rotateChart($event);"
+  (touchstart)="startRotate($event)"
+  (touchend)="stopRotate()"
   [attr.transform]="rotationPoint"
   [attr.id]="svgGroupId"
 
->
+
+  >
   <ng-container  *ngFor="let element of elements" >
 
 

@@ -1,16 +1,27 @@
 
 <div class="container-fluid">
-<table>
-  <tr>
-    <td>
-      <div *ngIf="!submitting" [ngStyle]="{'min-width.px': options.size,'width.px': options.size}" >
+<!--  <div class="d-flex flex-row">-->
+<!--    <div class="p-12">-->
+<!--      <div style="background-color: #0074D9;min-height: 1200px;">-->
+<!--        hi-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+  <div class="d-flex flex-row">
+    <div class="p-6">
+
+
+      <div class="d-flex justify-content-center  pt-5" *ngIf="!submitting" [ngStyle]="{'min-width.px': options.size,'width.px': options.size}" >
 
 
         <lib-sunburst-radar-chart  [options]="options"  [items]="items"></lib-sunburst-radar-chart>
 
       </div>
-    </td>
-    <td>
+
+    </div>
+    <div class="p-6">
+
+      <div class="pl-5 pt-5">
       <form (ngSubmit)="updateChart()">
         <div class="form-group ">
           <label for="chartSize" >Chart Size</label>
@@ -33,12 +44,12 @@
             <option  value="false">false</option>
           </select>
         </div>
-   <div class="form-group ">
+        <div class="form-group ">
           <label for="animateChart" >Animate</label>
-     <select id="animateChart" name="animateChart" [(ngModel)]="animateChart" class="form-control">
-       <option value="true">true</option>
-       <option  value="false">false</option>
-     </select>
+          <select id="animateChart" name="animateChart" [(ngModel)]="animateChart" class="form-control">
+            <option value="true">true</option>
+            <option  value="false">false</option>
+          </select>
 
         </div>
 
@@ -51,10 +62,13 @@
       <div class="alert alert-danger" role="alert" *ngIf="error">
         {{error}}
       </div>
+      </div>
+    </div>
 
-    </td>
-  </tr>
-</table>
+  </div>
+
+
+
 
 
 </div>

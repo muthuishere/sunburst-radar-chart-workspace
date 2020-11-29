@@ -64,3 +64,13 @@ export function getFormattedAngle(angle, center) {
   const [centerX, centerY] = [center.x, center.y];
   return 'rotate(' + angle + ' ' + centerX + ' ' + centerY + ')';
 }
+
+export function getCurrentPointFromEvent(evt) {
+
+  let [x, y] = [evt.clientX, evt.clientY];
+  if (evt.targetTouches && evt.targetTouches[0]) {
+    [x, y] = [evt.targetTouches[0].pageX, evt.targetTouches[0].pageY];
+  }
+  return {x, y};
+
+}

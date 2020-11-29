@@ -32,7 +32,7 @@ function getRadiusForBorderAndText(radius, borderHeight) {
 
 export function getMaxDepth(items, currentLevel = 0) {
 
-  let depths;
+  let depths=[];
   if (items && items.length > 0) {
     const nextLevel = currentLevel + 1;
     depths = items

@@ -2,13 +2,14 @@ import {async, ComponentFixture, TestBed} from '@angular/core/testing';
 
 import {AngularSunburstRadarChartComponent} from './angular-sunburst-radar-chart.component';
 import {getMaxDepth} from './utils/positions';
-import {clone, getItemTitle, getOptionsOrEmpty, hashCode} from './utils/utils';
+import {clone, getCurrentPointFromEvent, getItemTitle, getOptionsOrEmpty, hashCode} from './utils/utils';
 import {SimpleChange} from '@angular/core';
 import {convertToPercentage} from './utils/math';
 import {getUpdatedPoints} from './utils/arc-bar-charts';
 import {getAllAnglesBasedOnChild, getAllAnglesBasedOnParent} from './utils/angels';
-import {getLargeArcFlag} from './utils/trignometry';
+import {adjustAngleRadianDifference, getLargeArcFlag} from './utils/trignometry';
 import {By} from '@angular/platform-browser';
+import {getTextForAngle, writeTextOnArc} from './utils/textelement';
 
 
 const itemsWithChildren = [
@@ -247,8 +248,6 @@ describe('AngularSunburstRadarChartComponent', () => {
     component.modifyOnFirstChange(true);
 
 
-
-
   });
   it('Start Rotate tests', () => {
     expect(component).toBeTruthy();
@@ -262,7 +261,7 @@ describe('AngularSunburstRadarChartComponent', () => {
 
     component.ngOnInit();
     fixture.detectChanges();
-    const groupElement = fixture.debugElement.query(By.css('#' +component.svgGroupId));
+    const groupElement = fixture.debugElement.query(By.css('#' + component.svgGroupId));
     const mouseDownEvent = new MouseEvent('mousedown');
     groupElement.nativeElement.dispatchEvent(mouseDownEvent);
 
@@ -277,7 +276,42 @@ describe('AngularSunburstRadarChartComponent', () => {
     expect(component.startRotation).toBeTrue();
 
 
+  });
 
+  it('Start Rotate tests - initPoint CHanges', () => {
+    expect(component).toBeTruthy();
+
+
+    component.items = itemsWithChildren;
+
+
+    component.options = {size: 300, maxScore: 100, animateChart: true, splitBasedOnChildren: false, legendAxisLinePosition: 1};
+
+
+    component.ngOnInit();
+    fixture.detectChanges();
+    const groupElement = fixture.debugElement.query(By.css('#' + component.svgGroupId));
+    const mouseDownEvent = new MouseEvent('mousedown');
+    groupElement.nativeElement.dispatchEvent(mouseDownEvent);
+
+    fixture.detectChanges();
+
+
+    const mouseMoveEvent = new MouseEvent('mousemove');
+    groupElement.nativeElement.dispatchEvent(mouseMoveEvent);
+
+    fixture.detectChanges();
+
+
+    component.svgHandler.initPoint = 40;
+    component.svgHandler.previousPoint = 20;
+    component.svgHandler.updateInitPointFromCurrentPoint(25);
+    expect(component.svgHandler.initPoint).toEqual(35);
+
+    component.svgHandler.initPoint = 40;
+    component.svgHandler.previousPoint = 20;
+    component.svgHandler.updateInitPointFromCurrentPoint(15);
+    expect(component.svgHandler.initPoint).toEqual(45);
 
 
   });
@@ -294,13 +328,12 @@ describe('AngularSunburstRadarChartComponent', () => {
     component.ngOnInit();
     fixture.detectChanges();
     component.onOutOfComponent();
-    expect(component.startRotation).toBeFalse()
-    expect(component.showToolTip).toBeFalse()
-
+    expect(component.startRotation).toBeFalse();
+    expect(component.showToolTip).toBeFalse();
 
 
   });
- it('Start Rotate tests - should not draw if mouse is not dragged', () => {
+  it('Start Rotate tests - should not draw if mouse is not dragged', () => {
     expect(component).toBeTruthy();
 
 
@@ -312,15 +345,13 @@ describe('AngularSunburstRadarChartComponent', () => {
 
     component.ngOnInit();
     fixture.detectChanges();
-    component.startRotation=false
-const existingRotationPoint = component.rotationPoint
-   component.rotateChart(null)
-    expect(component.rotationPoint).toEqual(existingRotationPoint)
-
+    component.startRotation = false;
+    const existingRotationPoint = component.rotationPoint;
+    component.rotateChart(null);
+    expect(component.rotationPoint).toEqual(existingRotationPoint);
 
 
   });
-
 
 
   it('Ensure When items does not have children hasChildren should be false', () => {
@@ -368,7 +399,7 @@ const existingRotationPoint = component.rotationPoint
 
 describe('position tests', () => {
 
-  it('should be level 2', () => {
+  it('should be level 2 for 2 levels', () => {
 
     const items = [
       {
@@ -459,15 +490,54 @@ describe('position tests', () => {
 
     expect(getMaxDepth(items)).toBe(2);
   });
+  it('should be 0 for null or empty items', () => {
+
+    let items = [];
+
+
+    expect(getMaxDepth(items)).toBe(0);
+    items = null;
+
+
+    expect(getMaxDepth(items)).toBe(0);
+  });
 });
 
 describe('utils tests', () => {
+
+
+  it('should return touch event co ordinates , if its been from touch', () => {
+
+
+    const expectedTouch = {x: 100, y: 123};
+    const expectedMouse = {x: 150, y: 173};
+    let targetTouches = [{pageX: 100, pageY: 123}];
+
+    let event: any = {clientX: 150, clientY: 173, targetTouches};
+    let actual = getCurrentPointFromEvent(event);
+    expect(actual).toEqual(expectedTouch);
+    event = {clientX: 150, clientY: 173};
+    actual = getCurrentPointFromEvent(event);
+    expect(actual).toEqual(expectedMouse);
+    targetTouches = [];
+    event = {clientX: 150, clientY: 173, targetTouches};
+    actual = getCurrentPointFromEvent(event);
+    expect(actual).toEqual(expectedMouse);
+
+  });
 
   it('should be empty if null', () => {
 
 
     expect(getOptionsOrEmpty(null)).toEqual({});
   });
+  it('adjustAngleRadianDifference should subtract if divided by 4 leads to zero', () => {
+
+
+    expect(adjustAngleRadianDifference(-3, 1)).toEqual(-1.75);
+    expect(adjustAngleRadianDifference(0, 4)).toEqual(1);
+  });
+
 
   it('should be empty if item is null', () => {
 
@@ -476,7 +546,7 @@ describe('utils tests', () => {
   });
   it('clone should return', () => {
 
-    let obj = {'name': 'Mr x'};
+    const obj = {name: 'Mr x'};
     const item = clone(obj);
 
     expect(obj).toEqual(item);
@@ -511,13 +581,29 @@ describe('textelement tests', () => {
 
     expect(getLargeArcFlag(100, 300)).toEqual('1');
   });
+  it('getTextForAngle should return valid value ', () => {
+
+
+    expect(getTextForAngle('yes sir', 2, 16)).toEqual('..');
+    expect(getTextForAngle('yes sir', 2, 19)).toEqual('..');
+  });
+  it('writeTextOnArc should not set href if path is not empty ', () => {
+
+
+    let result: any = writeTextOnArc({});
+
+    expect(result).not.toBeNull();
+    result = writeTextOnArc({pathId: 'somepath'});
+
+    expect(result).not.toBeNull();
+  });
 });
 describe('angle tests', () => {
 
   it('calling getAllAnglesBasedOnChild with items of no child nodes should not set children angles', () => {
 
     const allAngles = getAllAnglesBasedOnChild(itemsWithNoChildren);
-    const childCount = allAngles.filter(currentItem => !!currentItem['children']).length;
+    const childCount = allAngles.filter(currentItem => !!currentItem.children).length;
     expect(childCount).toEqual(0);
 
 
@@ -525,7 +611,7 @@ describe('angle tests', () => {
   it('calling getAllAnglesBasedOnParent with items of no child nodes should not set children angles', () => {
 
     const allAngles = getAllAnglesBasedOnParent(itemsWithNoChildren);
-    const childCount = allAngles.filter(currentItem => !!currentItem['children']).length;
+    const childCount = allAngles.filter(currentItem => !!currentItem.children).length;
     expect(childCount).toEqual(0);
 
 
